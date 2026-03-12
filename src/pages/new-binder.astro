@@ -150,7 +150,6 @@
 		</main>
 
 		<script type="module">
-		import { saveBinder } from '../firestoreSync';
 		const form = document.getElementById('new-binder-form');
 		const status = document.getElementById('status');
 
@@ -158,7 +157,7 @@
 			throw new Error('Required form elements are missing.');
 		}
 
-		form.addEventListener('submit', async (event) => {
+		form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const formData = new FormData(form);
 			const binderName = String(formData.get('binderName') || '').trim();
@@ -171,14 +170,17 @@
 				return;
 			}
 
-			const username = localStorage.getItem('mtgUsername') || '';
+			// Save binder to localStorage
+			const STORAGE_KEY = 'mtgBinders';
+			const binders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 			const newBinder = {
 				id: Date.now(),
 				name: binderName,
 				description,
 				color
 			};
-			await saveBinder(username, String(newBinder.id), newBinder);
+			binders.push(newBinder);
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
 			status.textContent = 'Binder created. Redirecting...';
 			setTimeout(() => {
 				window.location.href = '/Moltencollection/binders';
