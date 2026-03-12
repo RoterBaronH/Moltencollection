@@ -807,7 +807,7 @@
 				});
 
 				const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-					return; // Disable saving for visitors
+					await saveCollection(username, { cards });
 				};
 
 			const readMetaCache = (): Record<string, CardMeta> => {

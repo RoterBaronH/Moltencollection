@@ -1732,7 +1732,7 @@
 			const emptyBinderPage = (): BinderSlotValue[] => Array(BINDER_SLOTS_PER_PAGE).fill(null);
 
 			import { getBinders, saveBinder, getCollection, saveCollection } from '../firestoreSync';
-			const username = localStorage.getItem('mtgUsername') || '';
+			const username = 'public';
 			let binders: BinderStorage[] = [];
 			getBinders(username).then((data) => {
 				binders = data;
@@ -1740,7 +1740,9 @@
 			});
 
 			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
-				return; // Disable saving for visitors
+				for (const binder of binders) {
+					await saveBinder(username, String(binder.id), binder);
+				}
 			};
 
 			let collectionCards: SlotCard[] = [];
@@ -1752,7 +1754,7 @@
 			}
 			fetchCollection();
 			const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-				return; // Disable saving for visitors
+				await saveCollection(username, { cards });
 			};
 
 			const ensureBinderPages = (binder: BinderStorage): BinderSlotValue[][] => {

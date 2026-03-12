@@ -393,7 +393,7 @@
 					});
 			};
 
-			const username = localStorage.getItem('mtgUsername') || '';
+			const username = 'public';
 			let binders: Binder[] = [];
 			getBinders(username).then((data) => {
 				binders = sanitizeBinders(data);
@@ -401,7 +401,9 @@
 			});
 
 			const saveBinders = async (): Promise<void> => {
-				return; // Disable saving for visitors
+				for (const binder of binders) {
+					await saveBinder(username, String(binder.id), binder);
+				}
 			};
 
 			const moveBinderToTarget = (binderId: number, targetBinderId: number): void => {
