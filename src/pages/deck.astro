@@ -1795,21 +1795,17 @@
 
 			const addCardToCollection = (card: SlotCard, sourceKey: string): { ok: boolean; message: string } => {
 				const collectionCards = readCollectionCards();
-				const variantKey = collectionVariantKey(card);
-
-				// Check if card variant is already in collection
-				const exists = collectionCards.some((c) => collectionVariantKey(c) === variantKey);
+				// Only allow one copy per card id
+				const exists = collectionCards.some((c) => c.id === card.id);
 				if (exists) {
 					return {
 						ok: false,
 						message: `${card.name} is already in your collection.`
 					};
 				}
-
 				const cardToAdd = cloneForCollection(card, sourceKey);
 				collectionCards.push(cardToAdd);
 				saveCollectionCards(collectionCards);
-
 				return {
 					ok: true,
 					message: `Added ${card.name} to collection.`
@@ -1817,8 +1813,7 @@
 			};
 
 			const isInCollection = (card: SlotCard): boolean => {
-				const variantKey = collectionVariantKey(card);
-				return readCollectionCards().some((entry) => collectionVariantKey(entry) === variantKey);
+				return readCollectionCards().some((entry) => entry.id === card.id);
 			};
 
 			const syncAddToCollectionButton = (card: SlotCard | null): void => {
@@ -2491,7 +2486,7 @@
 					const img = document.createElement('img');
 					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
 					img.alt = card.name;
-					img.loading = 'lazy';
+					img.loading = 'eager';
 
 					const textWrap = document.createElement('div');
 					const name = document.createElement('div');
@@ -2508,10 +2503,8 @@
 					textWrap.append(name, setLine);
 					button.append(img, textWrap);
 
-					button.addEventListener('click', async () => {
-						await addCardToActiveDeck(asSlotCard(card));
-						deckAddCardInput.value = '';
-						closeDeckSearchPanel();
+					button.addEventListener('click', () => {
+						closeCommanderSearchModal(asSlotCard(card));
 					});
 					deckSearchResults.appendChild(button);
 				});
