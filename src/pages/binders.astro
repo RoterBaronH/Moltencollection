@@ -393,7 +393,7 @@
 					});
 			};
 
-			const username = 'public';
+			const username = localStorage.getItem('mtgUsername') || '';
 			let binders: Binder[] = [];
 			getBinders(username).then((data) => {
 				binders = sanitizeBinders(data);

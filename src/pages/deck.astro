@@ -1732,20 +1732,11 @@
 			const emptyBinderPage = (): BinderSlotValue[] => Array(BINDER_SLOTS_PER_PAGE).fill(null);
 
 			import { getBinders, saveBinder, getCollection, saveCollection } from '../firestoreSync';
-			let publicView = false;
-			const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
+			const username = localStorage.getItem('mtgUsername') || '';
 			let binders: BinderStorage[] = [];
-			function fetchBinders() {
-				getBinders(username()).then((data) => {
-					binders = data;
-					// Optionally re-render UI here
-				});
-			}
-			fetchBinders();
-			document.getElementById('publicViewToggle').addEventListener('change', (e) => {
-				publicView = e.target.checked;
-				fetchBinders();
-				document.body.classList.toggle('public-view', publicView);
+			getBinders(username).then((data) => {
+				binders = data;
+				// Optionally re-render UI here
 			});
 
 			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
