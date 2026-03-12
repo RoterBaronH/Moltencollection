@@ -1740,6 +1740,7 @@
 			});
 
 			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
+				if (!window.mtgIsAuthed) return;
 				for (const binder of binders) {
 					await saveBinder(username, String(binder.id), binder);
 				}
@@ -1754,6 +1755,7 @@
 			}
 			fetchCollection();
 			const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
+				if (!window.mtgIsAuthed) return;
 				await saveCollection(username, { cards });
 			};
 

@@ -401,6 +401,7 @@
 			});
 
 			const saveBinders = async (): Promise<void> => {
+				if (!window.mtgIsAuthed) return;
 				for (const binder of binders) {
 					await saveBinder(username, String(binder.id), binder);
 				}
