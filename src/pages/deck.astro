@@ -2142,9 +2142,25 @@
 				rowEl.title = row.card.name;
 				rowEl.innerHTML = `
 					<div class="deck-row-qty">${quantityOverride ?? row.count}</div>
-					<div class="deck-row-name">${escapeHtml(row.card.name)}${row.card.proxy ? ' <span class="deck-row-proxy-badge">P</span>' : ''}</div>
+					<div class="deck-row-name">
+						${escapeHtml(row.card.name)}
+						${row.card.proxy ? ' <span class="deck-row-proxy-badge">P</span>' : ''}
+						${row.card.foil === 'foil' ? ' <span class="deck-row-foil-badge">F</span>' : ''}
+					</div>
 					<div class="deck-row-cost">${manaCostHtml}</div>
 				`;
+				.deck-row-foil-badge {
+					display: inline-block;
+					padding: 0 4px;
+					margin-left: 4px;
+					border-radius: 3px;
+					background: #6ec6ff;
+					color: #003366;
+					font-size: 10px;
+					font-weight: 700;
+					line-height: 1.5;
+					vertical-align: middle;
+				}
 				const nameEl = rowEl.querySelector('.deck-row-name') as HTMLDivElement | null;
 				if (nameEl) {
 					nameEl.addEventListener('mouseenter', () => {
