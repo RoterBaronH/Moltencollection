@@ -1,0 +1,1867 @@
+---
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Binder</title>
+		<script src="/Moltencollection/auth.js" is:inline></script>
+		<style is:global>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #1a1a1a;
+				color: #fff;
+				min-height: 100vh;
+				--binder-accent-rgb: 44, 62, 80;
+			}
+			.ms {
+				line-height: 1;
+				vertical-align: middle;
+			}
+			.ms-cost {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 1.12em;
+				height: 1.12em;
+				font-size: 1em;
+			}
+			.ms-cost::before {
+				font-size: 0.8em;
+			}
+			.ms-cost.ms-w::before,
+			.ms-cost.ms-u::before,
+			.ms-cost.ms-b::before,
+			.ms-cost.ms-r::before,
+			.ms-cost.ms-g::before {
+				font-size: 0.88em;
+			}
+			.nav {
+				display: flex;
+				gap: 0;
+				background-color: #333;
+			}
+			.nav-btn {
+				flex: 1;
+				padding: 15px 20px;
+				background-color: #333;
+				color: white;
+				text-decoration: none;
+				text-align: center;
+				border-right: 1px solid #555;
+			}
+			.nav-btn:hover {
+				background-color: #555;
+			}
+			.nav-btn.active {
+				background-color: #0066cc;
+			}
+			.nav-btn:last-child {
+				border-right: none;
+			}
+			main {
+				padding: 0 20px 20px;
+			}
+			.binder-header {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 12px;
+				margin-top: 6px;
+				margin-bottom: 6px;
+			}
+			.binder-header::after {
+				display: none;
+			}
+			.binder-heading {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				min-width: 0;
+				justify-self: start;
+				width: min(620px, 100%);
+				padding: 8px 12px;
+				border-radius: 12px;
+				background: linear-gradient(90deg, rgba(var(--binder-accent-rgb), 0.72) 0%, rgba(var(--binder-accent-rgb), 0.58) 66%, rgba(var(--binder-accent-rgb), 0.32) 86%, rgba(var(--binder-accent-rgb), 0) 100%);
+				box-shadow: 0 8px 22px rgba(30, 44, 57, 0.35);
+			}
+			.binder-title-row {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+			.binder-title {
+				font-size: 30px;
+				font-weight: bold;
+			}
+			.back-link {
+				display: inline-flex;
+				align-items: center;
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #41586b;
+				text-decoration: none;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+				line-height: 1;
+			}
+			.back-link:hover { background: #1b2633; }
+
+			/* ── spread viewer ── */
+			.spread-wrapper {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 0;
+			}
+			.spread-nav {
+				display: grid;
+				grid-template-columns: 1fr auto 1fr;
+				align-items: center;
+				width: min(100%, 1163px);
+				column-gap: 16px;
+				align-self: center;
+			}
+			.spread-nav-main {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				grid-column: 2;
+			}
+			.binder-search {
+				position: relative;
+				width: 260px;
+				margin: 0;
+				grid-column: 3;
+				justify-self: end;
+			}
+			.binder-search-input {
+				width: 100%;
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 13px;
+			}
+			.binder-search-results {
+				position: absolute;
+				top: calc(100% + 6px);
+				left: 0;
+				right: 0;
+				max-height: 260px;
+				overflow: auto;
+				background: #111923;
+				border: 1px solid #324457;
+				border-radius: 10px;
+				box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+				z-index: 20;
+			}
+			.binder-search-results[hidden] {
+				display: none;
+			}
+			.binder-search-result {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				width: 100%;
+				border: 0;
+				border-bottom: 1px solid #263646;
+				padding: 9px 11px;
+				background: transparent;
+				color: #e5eff8;
+				text-align: left;
+				cursor: pointer;
+			}
+			.binder-search-result:last-child {
+				border-bottom: 0;
+			}
+			.binder-search-result:hover {
+				background: #1a2a3a;
+			}
+			.binder-search-result-main {
+				font-size: 13px;
+				font-weight: 600;
+			}
+			.binder-search-result-sub {
+				font-size: 12px;
+				color: #9db0bf;
+			}
+			.nav-arrow {
+				width: 44px;
+				height: 44px;
+				border: none;
+				border-radius: 50%;
+				background: #2e404f;
+				color: #fff;
+				font-size: 20px;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+			}
+			.nav-arrow:hover:not(:disabled) { background: #3d5a6e; }
+			.nav-arrow:disabled {
+				opacity: 0.3;
+				cursor: default;
+			}
+			.page-counter {
+				color: #9db0bf;
+				font-size: 14px;
+				min-width: 90px;
+				text-align: center;
+			}
+			.add-pages-btn {
+				padding: 9px 14px;
+				border: none;
+				border-radius: 8px;
+				background: #2ea043;
+				color: #fff;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.add-pages-btn:hover { background: #238636; }
+			.insert-pages-btn {
+				padding: 9px 14px;
+				border: none;
+				border-radius: 8px;
+				background: #1f6feb;
+				color: #fff;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.insert-pages-btn:hover { background: #2f81f7; }
+			.remove-pages-btn {
+				padding: 9px 14px;
+				border: none;
+				border-radius: 8px;
+				background: #c03636;
+				color: #fff;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.remove-pages-btn:hover:not(:disabled) { background: #dc4a4a; }
+			.remove-pages-btn:disabled {
+				opacity: 0.4;
+				cursor: default;
+			}
+
+			@media (max-width: 980px) {
+				.binder-header {
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+				}
+				.binder-header::after {
+					display: none;
+				}
+				.binder-search {
+					width: 100%;
+					margin-top: 8px;
+				}
+				.spread-nav {
+					width: 100%;
+					display: flex;
+					flex-wrap: wrap;
+					justify-content: flex-start;
+					justify-self: auto;
+				}
+				.spread-nav-main {
+					display: flex;
+					flex-wrap: wrap;
+				}
+			}
+
+			/* ── the two-page spread ── */
+			.spread {
+				display: inline-flex;
+				gap: 0;
+				background: #0d1117;
+				border-radius: 16px;
+				overflow: hidden;
+				box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+			}
+			.binder-page {
+				display: grid;
+				grid-template-columns: repeat(3, 170px);
+				gap: 13px;
+				padding: 22px;
+				background: #161b22;
+				position: relative;
+			}
+			.binder-page:first-child {
+				border-right: 3px solid #0d1117;
+			}
+			.card-slot {
+				border: 0;
+				width: 170px;
+				height: 238px;
+				aspect-ratio: 5 / 7;
+				border-radius: 8px;
+				border: 2px dashed #2d3f50;
+				background: #0d1117;
+				display: flex;
+				position: relative;
+				align-items: center;
+				justify-content: center;
+				color: #2d3f50;
+				font-size: 22px;
+				cursor: pointer;
+				padding: 0;
+				overflow: hidden;
+			}
+			.card-slot.slot-filled {
+				border-style: solid;
+				border-color: #314355;
+				cursor: default;
+			}
+			.card-slot.slot-highlight {
+				box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.78) inset;
+				border-color: #ffd166;
+			}
+			.card-slot.slot-in-deck .slot-image,
+			.card-slot.slot-in-deck .slot-image-static {
+				filter: grayscale(1) contrast(1.05);
+			}
+			.card-slot.slot-foil::after,
+			.card-slot.slot-etched::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				border-radius: 6px;
+			}
+			.card-slot.slot-foil::after {
+				background:
+					linear-gradient(115deg, rgba(255, 255, 255, 0.34) 6%, rgba(255, 255, 255, 0.02) 24%, rgba(255, 255, 255, 0.28) 40%, rgba(255, 255, 255, 0.03) 58%, rgba(255, 255, 255, 0.22) 78%, rgba(255, 255, 255, 0.04) 100%),
+					linear-gradient(135deg, rgba(147, 197, 253, 0.24) 16%, rgba(244, 114, 182, 0.21) 52%, rgba(250, 204, 21, 0.24) 84%);
+				mix-blend-mode: screen;
+			}
+			.card-slot.slot-etched::after {
+				background:
+					linear-gradient(120deg, rgba(255, 248, 220, 0.28) 8%, rgba(255, 248, 220, 0.02) 46%, rgba(255, 248, 220, 0.22) 88%),
+					linear-gradient(145deg, rgba(245, 158, 11, 0.24) 0%, rgba(120, 53, 15, 0.18) 40%, rgba(253, 230, 138, 0.24) 100%);
+				mix-blend-mode: screen;
+			}
+			.card-slot.slot-cover {
+				background: transparent;
+				border: none;
+				cursor: default;
+			}
+			.card-slot:not(.slot-filled):hover {
+				border-color: #4a6480;
+				color: #4a6480;
+			}
+			.slot-image {
+				width: 100%;
+				height: 100%;
+				display: block;
+				object-fit: cover;
+			}
+			.slot-image-static {
+				width: 100%;
+				height: 100%;
+				display: block;
+				background-size: cover;
+				background-position: center;
+			}
+			.slot-text {
+				padding: 10px;
+				font-size: 13px;
+				line-height: 1.25;
+				text-align: center;
+				color: #d7e2ed;
+			}
+			.card-inspector-backdrop {
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.72);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				z-index: 60;
+			}
+			.card-inspector-backdrop[hidden] {
+				display: none;
+			}
+			.card-inspector-modal {
+				width: min(980px, 100%);
+				max-height: 84vh;
+				overflow: hidden;
+				border-radius: 14px;
+				border: 1px solid #324457;
+				background: #111923;
+				display: grid;
+				grid-template-columns: minmax(280px, 360px) 1fr;
+			}
+			.card-inspector-left {
+				padding: 16px;
+				border-right: 1px solid #2a3a4a;
+				display: flex;
+				position: relative;
+				justify-content: center;
+				align-items: flex-start;
+				overflow: auto;
+			}
+			.card-inspector-left.inspector-foil::after,
+			.card-inspector-left.inspector-etched::after {
+				content: '';
+				position: absolute;
+				inset: 16px;
+				pointer-events: none;
+				border-radius: 10px;
+			}
+			.card-inspector-left.inspector-foil::after {
+				background:
+					linear-gradient(115deg, rgba(255, 255, 255, 0.44) 6%, rgba(255, 255, 255, 0.03) 24%, rgba(255, 255, 255, 0.36) 40%, rgba(255, 255, 255, 0.04) 58%, rgba(255, 255, 255, 0.3) 78%, rgba(255, 255, 255, 0.06) 100%),
+					linear-gradient(135deg, rgba(147, 197, 253, 0.28) 16%, rgba(244, 114, 182, 0.24) 52%, rgba(250, 204, 21, 0.28) 84%);
+				mix-blend-mode: screen;
+			}
+			.card-inspector-left.inspector-etched::after {
+				background:
+					linear-gradient(120deg, rgba(255, 248, 220, 0.34) 8%, rgba(255, 248, 220, 0.03) 46%, rgba(255, 248, 220, 0.28) 88%),
+					linear-gradient(145deg, rgba(245, 158, 11, 0.3) 0%, rgba(120, 53, 15, 0.2) 40%, rgba(253, 230, 138, 0.3) 100%);
+				mix-blend-mode: screen;
+			}
+			.card-inspector-image {
+				width: 100%;
+				max-width: 320px;
+				border-radius: 10px;
+				box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+				display: block;
+			}
+			.card-inspector-right {
+				display: flex;
+				flex-direction: column;
+				min-height: 0;
+			}
+			.card-inspector-header {
+				padding: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.card-inspector-actions {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.card-inspector-remove {
+				border: 1px solid #8b1d1d;
+				background: #c03636;
+				color: #fff;
+				border-radius: 8px;
+				padding: 7px 9px;
+				font-size: 12px;
+				line-height: 1;
+				cursor: pointer;
+			}
+			.card-inspector-remove:hover {
+				background: #dc4a4a;
+			}
+			.card-inspector-title {
+				font-size: 16px;
+				font-weight: 700;
+				color: #e7f0f8;
+			}
+			.card-inspector-close {
+				border: 0;
+				background: #2e404f;
+				color: #fff;
+				border-radius: 8px;
+				padding: 8px 10px;
+				cursor: pointer;
+			}
+			.card-inspector-close:hover {
+				background: #3d5a6e;
+			}
+			.card-inspector-controls {
+				padding: 12px 14px;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.card-inspector-field {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+			.card-inspector-label {
+				font-size: 12px;
+				color: #9db0bf;
+			}
+			.card-inspector-select {
+				padding: 9px 10px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 13px;
+			}
+			.card-inspector-version-btn {
+				grid-column: 1 / -1;
+				border: 0;
+				background: #2a3745;
+				color: #fff;
+				border-radius: 8px;
+				padding: 10px 12px;
+				cursor: pointer;
+				text-align: left;
+			}
+			.card-inspector-version-btn:hover {
+				background: #394a5c;
+			}
+			.card-inspector-deck-btn {
+				border: 1px solid #42566a;
+				background: #1f2a36;
+				color: #dbe8f5;
+				border-radius: 8px;
+				padding: 7px 9px;
+				font-size: 12px;
+				line-height: 1;
+				cursor: pointer;
+				text-align: center;
+				white-space: nowrap;
+			}
+			.card-inspector-deck-btn.is-active {
+				background: #3a2f17;
+				border-color: #8a6a2d;
+				color: #ffe5a9;
+			}
+			.card-inspector-deck-name {
+				grid-column: 1 / -1;
+				padding: 9px 10px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 13px;
+			}
+			.card-inspector-deck-name[hidden] {
+				display: none;
+			}
+			.card-inspector-meta {
+				font-size: 12px;
+				color: #9db0bf;
+			}
+			.card-inspector-price {
+				margin-top: 4px;
+				font-size: 11px;
+				color: #cfdceb;
+				opacity: 0.9;
+			}
+			.card-inspector-errata {
+				padding: 12px 14px;
+				overflow: auto;
+				min-height: 0;
+			}
+			.card-inspector-errata-title {
+				font-size: 13px;
+				font-weight: 700;
+				color: #dbe8f5;
+				margin-bottom: 8px;
+			}
+			.card-inspector-errata-text {
+				white-space: pre-wrap;
+				line-height: 1.4;
+				font-size: 13px;
+				color: #c6d4e1;
+			}
+			.card-inspector-errata-text .ms {
+				font-size: 15px;
+				line-height: 1;
+				margin: 0 1px;
+			}
+			@media (max-width: 900px) {
+				.card-inspector-modal {
+					grid-template-columns: 1fr;
+				}
+				.card-inspector-left {
+					border-right: 0;
+					border-bottom: 1px solid #2a3a4a;
+				}
+			}
+			.card-search-backdrop {
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.65);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				z-index: 50;
+			}
+			.card-search-backdrop[hidden] {
+				display: none;
+			}
+			.card-search-modal {
+				width: min(760px, 100%);
+				max-height: 80vh;
+				overflow: hidden;
+				background: #111923;
+				border: 1px solid #324457;
+				border-radius: 14px;
+				display: flex;
+				flex-direction: column;
+			}
+			.card-search-header {
+				padding: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.card-search-title {
+				font-size: 16px;
+				font-weight: 700;
+			}
+			.card-search-actions {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.card-search-back {
+				border: 0;
+				background: #2a3745;
+				color: #fff;
+				border-radius: 8px;
+				padding: 8px 10px;
+				cursor: pointer;
+			}
+			.card-search-back:hover {
+				background: #394a5c;
+			}
+			.card-search-back[hidden] {
+				display: none;
+			}
+			.card-search-close {
+				border: 0;
+				background: #2e404f;
+				color: #fff;
+				border-radius: 8px;
+				padding: 8px 10px;
+				cursor: pointer;
+			}
+			.card-search-close:hover {
+				background: #3d5a6e;
+			}
+			.card-search-input-wrap {
+				padding: 12px 14px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.card-search-input {
+				width: 100%;
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+			}
+			.card-search-status {
+				padding: 10px 14px;
+				font-size: 13px;
+				color: #9db0bf;
+			}
+			.card-search-results {
+				overflow: auto;
+				padding: 10px;
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+				gap: 10px;
+			}
+			.card-result {
+				border: 1px solid #2f4153;
+				background: #162230;
+				border-radius: 10px;
+				padding: 8px;
+				display: flex;
+				gap: 8px;
+				align-items: center;
+				cursor: pointer;
+				text-align: left;
+			}
+			.card-result:hover {
+				border-color: #4c6680;
+				background: #1b2b3b;
+			}
+			.card-result img {
+				width: 48px;
+				height: 68px;
+				object-fit: cover;
+				border-radius: 6px;
+				flex-shrink: 0;
+			}
+			.card-result-name {
+				font-size: 13px;
+				font-weight: 600;
+				color: #e7f0f8;
+			}
+			.card-result-sub {
+				font-size: 12px;
+				color: #98aebe;
+			}
+			.not-found {
+				background: #2a3540;
+				border: 1px solid #425466;
+				border-radius: 14px;
+				padding: 22px;
+				max-width: 500px;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="nav">
+			<a href="/Moltencollection/" class="nav-btn">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn active">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+		</nav>
+
+		<main>
+			<section id="binder-missing" class="not-found" hidden>
+				<a href="/Moltencollection/binders" class="back-link">&larr; Back</a>
+				<h1 style="margin-bottom:10px">Binder Not Found</h1>
+				<p>That binder could not be found.</p>
+			</section>
+
+			<div id="binder-view" hidden>
+				<div class="binder-header">
+					<div class="binder-heading">
+						<div class="binder-title-row">
+							<a href="/Moltencollection/binders" class="back-link">&larr; Back</a>
+							<span class="binder-title" id="binder-name"></span>
+						</div>
+					</div>
+
+					<div class="spread-nav">
+						<div class="spread-nav-main">
+							<button class="nav-arrow" id="prev-btn" title="Previous pages" disabled>&#8592;</button>
+							<span class="page-counter" id="page-counter"></span>
+							<button class="nav-arrow" id="next-btn" title="Next pages">&#8594;</button>
+							<button class="insert-pages-btn auth-required" id="insert-pages-btn">Insert Page Here</button>
+							<button class="remove-pages-btn auth-required" id="remove-pages-btn">Remove</button>
+							<button class="add-pages-btn auth-required" id="add-pages-btn">Add Page</button>
+						</div>
+						<div class="binder-search">
+							<input id="binder-search-input" class="binder-search-input" type="text" placeholder="Search cards in this binder" autocomplete="off" />
+							<div id="binder-search-results" class="binder-search-results" hidden></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="spread-wrapper">
+					<div class="spread" id="spread">
+						<div class="binder-page" id="page-left"></div>
+						<div class="binder-page" id="page-right"></div>
+					</div>
+				</div>
+			</div>
+
+			<div id="card-search-backdrop" class="card-search-backdrop" hidden>
+				<div class="card-search-modal" role="dialog" aria-modal="true" aria-labelledby="card-search-title">
+					<div class="card-search-header">
+						<span id="card-search-title" class="card-search-title">Search Scryfall</span>
+						<div class="card-search-actions">
+							<button id="card-search-back" class="card-search-back" type="button" hidden>Back</button>
+							<button id="card-search-close" class="card-search-close" type="button" aria-label="Close">&times;</button>
+						</div>
+					</div>
+					<div class="card-search-input-wrap">
+						<input id="card-search-input" class="card-search-input" type="text" placeholder="Search card name, e.g. Lightning Bolt" autocomplete="off" />
+					</div>
+					<div id="card-search-status" class="card-search-status">Type at least 2 characters to search.</div>
+					<div id="card-search-results" class="card-search-results"></div>
+				</div>
+			</div>
+
+			<div id="card-inspector-backdrop" class="card-inspector-backdrop" hidden>
+				<div class="card-inspector-modal" role="dialog" aria-modal="true" aria-labelledby="card-inspector-title">
+					<div id="card-inspector-left" class="card-inspector-left">
+						<img id="card-inspector-image" class="card-inspector-image" alt="Selected card" src="/Moltencollection/favicon.svg" />
+					</div>
+					<div class="card-inspector-right">
+						<div class="card-inspector-header">
+							<div>
+								<div id="card-inspector-title" class="card-inspector-title">Card</div>
+								<div id="card-inspector-meta" class="card-inspector-meta"></div>
+								<div id="card-inspector-price" class="card-inspector-price"></div>
+							</div>
+							<div class="card-inspector-actions">
+								<button id="card-inspector-remove" class="card-inspector-remove auth-required" type="button">Remove</button>
+								<button id="card-inspector-close" class="card-inspector-close" type="button" aria-label="Close">&times;</button>
+							</div>
+						</div>
+						<div class="card-inspector-controls auth-required">
+							<button id="card-inspector-edit-version" class="card-inspector-version-btn" type="button">Edit Version (Set / Printing)</button>
+							<div class="card-inspector-field">
+								<label for="card-inspector-foil" class="card-inspector-label">Foiling</label>
+								<select id="card-inspector-foil" class="card-inspector-select">
+									<option value="nonfoil">Nonfoil</option>
+									<option value="foil">Foil</option>
+									<option value="etched">Etched</option>
+								</select>
+							</div>
+							<div class="card-inspector-field">
+								<label for="card-inspector-lang" class="card-inspector-label">Language</label>
+								<select id="card-inspector-lang" class="card-inspector-select">
+									<option value="en">🇬🇧 English</option>
+									<option value="es">🇪🇸 Spanish</option>
+									<option value="fr">🇫🇷 French</option>
+									<option value="de">🇩🇪 German</option>
+									<option value="it">🇮🇹 Italian</option>
+									<option value="pt">🇵🇹 Portuguese</option>
+									<option value="ja">🇯🇵 Japanese</option>
+									<option value="ko">🇰🇷 Korean</option>
+									<option value="ru">🇷🇺 Russian</option>
+									<option value="zhs">🇨🇳 Chinese Simplified</option>
+									<option value="zht">🇹🇼 Chinese Traditional</option>
+								</select>
+							</div>
+						</div>
+						<div class="card-inspector-errata">
+							<div class="card-inspector-errata-title">Errata (Oracle Text)</div>
+							<div id="card-inspector-errata" class="card-inspector-errata-text">Loading...</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<script>
+			type SlotCard = {
+				id: string;
+				name: string;
+				imageUrl: string | null;
+				imageUrlLarge?: string | null;
+				scryfallUri: string;
+				setCode?: string;
+				setName?: string;
+				collectorNumber?: string;
+				lang?: string;
+				foil?: 'nonfoil' | 'foil' | 'etched';
+				inDeck?: boolean;
+				deckName?: string;
+			};
+
+			type SlotValue = SlotCard | string | null;
+
+			type Binder = {
+				id: number;
+				name: string;
+				color: string;
+				pages: SlotValue[][];
+			};
+
+			type ScryfallCard = {
+				id: string;
+				name: string;
+				scryfall_uri: string;
+				prints_search_uri?: string;
+				image_uris?: { small?: string; normal?: string };
+				card_faces?: Array<{
+					image_uris?: { small?: string; normal?: string };
+					oracle_text?: string;
+					type_line?: string;
+				}>;
+				set?: string;
+				set_name?: string;
+				collector_number?: string;
+				lang?: string;
+				digital?: boolean;
+				oracle_text?: string;
+				type_line?: string;
+				finishes?: string[];
+				layout?: string;
+				prices?: {
+					eur?: string | null;
+					eur_foil?: string | null;
+					usd?: string | null;
+					usd_foil?: string | null;
+				};
+			};
+
+			const STORAGE_KEY = 'mtgBinders';
+			const SLOTS_PER_PAGE = 9;
+
+			const emptyPage = (): SlotValue[] => Array(SLOTS_PER_PAGE).fill(null);
+
+			const hexToRgb = (hex: string | undefined): string | null => {
+				if (!hex) return null;
+				const value = hex.trim().replace('#', '');
+				if (!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(value)) return null;
+
+				const normalized = value.length === 3
+					? value.split('').map((char) => char + char).join('')
+					: value;
+
+				const r = Number.parseInt(normalized.slice(0, 2), 16);
+				const g = Number.parseInt(normalized.slice(2, 4), 16);
+				const b = Number.parseInt(normalized.slice(4, 6), 16);
+				return `${r}, ${g}, ${b}`;
+			};
+
+			// ── DOM refs ──────────────────────────────────────────────────────────
+			const binderView    = document.getElementById('binder-view')      as HTMLElement;
+			const missingView   = document.getElementById('binder-missing')   as HTMLElement;
+			const nameEl        = document.getElementById('binder-name')      as HTMLElement;
+			const pageLeft      = document.getElementById('page-left')        as HTMLElement;
+			const pageRight     = document.getElementById('page-right')       as HTMLElement;
+			const spreadEl      = document.getElementById('spread')           as HTMLElement;
+			const prevBtn       = document.getElementById('prev-btn')         as HTMLButtonElement;
+			const nextBtn       = document.getElementById('next-btn')         as HTMLButtonElement;
+			const pageCounter   = document.getElementById('page-counter')     as HTMLElement;
+			const insertPagesBtn = document.getElementById('insert-pages-btn') as HTMLButtonElement;
+			const removePagesBtn = document.getElementById('remove-pages-btn') as HTMLButtonElement;
+			const addPagesBtn   = document.getElementById('add-pages-btn')    as HTMLButtonElement;
+			const binderSearchInput = document.getElementById('binder-search-input') as HTMLInputElement;
+			const binderSearchResults = document.getElementById('binder-search-results') as HTMLElement;
+			const searchBackdrop = document.getElementById('card-search-backdrop') as HTMLElement;
+			const searchCloseBtn = document.getElementById('card-search-close') as HTMLButtonElement;
+			const searchBackBtn = document.getElementById('card-search-back') as HTMLButtonElement;
+			const searchInput = document.getElementById('card-search-input') as HTMLInputElement;
+			const searchInputWrap = searchInput.parentElement as HTMLDivElement;
+			const searchStatus = document.getElementById('card-search-status') as HTMLElement;
+			const searchResults = document.getElementById('card-search-results') as HTMLElement;
+			const inspectorBackdrop = document.getElementById('card-inspector-backdrop') as HTMLElement;
+			const inspectorLeft = document.getElementById('card-inspector-left') as HTMLElement;
+			const inspectorRemoveBtn = document.getElementById('card-inspector-remove') as HTMLButtonElement;
+			const inspectorCloseBtn = document.getElementById('card-inspector-close') as HTMLButtonElement;
+			const inspectorImage = document.getElementById('card-inspector-image') as HTMLImageElement;
+			const inspectorTitle = document.getElementById('card-inspector-title') as HTMLElement;
+			const inspectorMeta = document.getElementById('card-inspector-meta') as HTMLElement;
+			const inspectorPrice = document.getElementById('card-inspector-price') as HTMLElement;
+			const inspectorErrata = document.getElementById('card-inspector-errata') as HTMLElement;
+			const inspectorEditVersionBtn = document.getElementById('card-inspector-edit-version') as HTMLButtonElement;
+			const inspectorFoilSelect = document.getElementById('card-inspector-foil') as HTMLSelectElement;
+			const inspectorLangSelect = document.getElementById('card-inspector-lang') as HTMLSelectElement;
+
+			// ── load binders ──────────────────────────────────────────────────────
+			const readBinders = (): Binder[] => {
+				try {
+					const raw = localStorage.getItem(STORAGE_KEY);
+					return raw ? (JSON.parse(raw) as Binder[]) : [];
+				} catch { return []; }
+			};
+
+			const saveBinders = (binders: Binder[]): void => {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
+			};
+
+			// ── find this binder ──────────────────────────────────────────────────
+			const params = new URLSearchParams(window.location.search);
+			const requestedName = (params.get('name') || '').trim();
+
+			let binders = readBinders();
+			let binderIndex = binders.findIndex((b) => b.name === requestedName);
+
+			if (!requestedName || binderIndex === -1) {
+				missingView.hidden = false;
+				throw new Error('Binder not found.');
+			}
+
+			// migrate: ensure binder has at least 2 pages
+			if (!binders[binderIndex].pages || binders[binderIndex].pages.length < 2) {
+				binders[binderIndex].pages = [emptyPage(), emptyPage()];
+				saveBinders(binders);
+			}
+
+			let binder = binders[binderIndex];
+			let spreadIndex = 0; // which pair of pages is currently shown (0 = pages 0&1, 1 = pages 2&3, …)
+			let pendingSlot: { pageIdx: number; slotIdx: number } | null = null;
+			let inspectorSlot: { pageIdx: number; slotIdx: number; card: SlotCard } | null = null;
+			let highlightedSlot: { pageIdx: number; slotIdx: number } | null = null;
+			let highlightTimer: number | null = null;
+			let searchDebounceTimer: number | null = null;
+			let searchToken = 0;
+			let lastScryfallRequestAt = 0;
+			let lastSearchCards: ScryfallCard[] = [];
+			let versionPickerCardName = '';
+			const errataCache = new Map<string, {
+				text: string;
+				normalImage: string | null;
+				priceLabel: string;
+			}>();
+			const imagePreloadMap = new Map<string, Promise<void>>();
+
+			const totalSpreads = (): number => Math.ceil(binder.pages.length / 2);
+
+			// ── render ────────────────────────────────────────────────────────────
+			const pickCardImageSmall = (card: ScryfallCard): string | null => {
+				return card.image_uris?.small ?? card.card_faces?.find((face) => face.image_uris?.small)?.image_uris?.small ?? null;
+			};
+
+			const pickCardImageNormal = (card: ScryfallCard): string | null => {
+				return card.image_uris?.normal ?? card.card_faces?.find((face) => face.image_uris?.normal)?.image_uris?.normal ?? null;
+			};
+
+			const persistBinder = (): void => {
+				binders[binderIndex] = binder;
+				saveBinders(binders);
+			};
+
+			const slotImageUrl = (slot: SlotValue): string | null => {
+				if (slot && typeof slot === 'object' && 'imageUrl' in slot) {
+					return slot.imageUrl;
+				}
+				return null;
+			};
+
+			const clearBinderSearchResults = (): void => {
+				binderSearchResults.innerHTML = '';
+				binderSearchResults.hidden = true;
+			};
+
+			const highlightSlot = (pageIdx: number, slotIdx: number): void => {
+				highlightedSlot = { pageIdx, slotIdx };
+				renderSpread();
+				if (highlightTimer !== null) {
+					window.clearTimeout(highlightTimer);
+				}
+				highlightTimer = window.setTimeout(() => {
+					highlightedSlot = null;
+					renderSpread();
+				}, 1500);
+			};
+
+			type BinderSearchHit = {
+				pageIdx: number;
+				slotIdx: number;
+				card: SlotCard;
+			};
+
+			const collectBinderSearchHits = (query: string): BinderSearchHit[] => {
+				const term = query.trim().toLowerCase();
+				if (term.length < 2) return [];
+
+				const hits: BinderSearchHit[] = [];
+				binder.pages.forEach((page, pageIdx) => {
+					if (pageIdx === 0) return;
+					page.forEach((slot, slotIdx) => {
+						const card = asSlotCard(slot);
+						if (!card) return;
+
+						const haystack = [
+							card.name,
+							card.setName,
+							card.setCode,
+							card.collectorNumber
+						].filter(Boolean).join(' ').toLowerCase();
+
+						if (haystack.includes(term)) {
+							hits.push({ pageIdx, slotIdx, card });
+						}
+					});
+				});
+
+				return hits.slice(0, 80);
+			};
+
+			const renderBinderSearchHits = (hits: BinderSearchHit[]): void => {
+				binderSearchResults.innerHTML = '';
+
+				if (hits.length === 0) {
+					const noResult = document.createElement('div');
+					noResult.className = 'binder-search-result-sub';
+					noResult.style.padding = '10px 11px';
+					noResult.textContent = 'No matching cards in this binder.';
+					binderSearchResults.appendChild(noResult);
+					binderSearchResults.hidden = false;
+					return;
+				}
+
+				hits.forEach((hit) => {
+					const btn = document.createElement('button');
+					btn.type = 'button';
+					btn.className = 'binder-search-result';
+
+					const main = document.createElement('span');
+					main.className = 'binder-search-result-main';
+					main.textContent = hit.card.name;
+
+					const pageNumber = hit.pageIdx + 1;
+					const slotNumber = hit.slotIdx + 1;
+					const sub = document.createElement('span');
+					sub.className = 'binder-search-result-sub';
+					sub.textContent = `Page ${pageNumber} · Slot ${slotNumber}`;
+
+					btn.append(main, sub);
+					btn.addEventListener('click', () => {
+						spreadIndex = Math.floor(hit.pageIdx / 2);
+						renderSpread();
+						highlightSlot(hit.pageIdx, hit.slotIdx);
+						binderSearchInput.value = hit.card.name;
+						clearBinderSearchResults();
+					});
+
+					binderSearchResults.appendChild(btn);
+				});
+
+				binderSearchResults.hidden = false;
+			};
+
+			const preloadImage = (url: string): Promise<void> => {
+				const existing = imagePreloadMap.get(url);
+				if (existing) return existing;
+
+				const promise = new Promise<void>((resolve) => {
+					const img = new Image();
+					img.onload = () => resolve();
+					img.onerror = () => resolve();
+					img.src = url;
+				});
+
+				imagePreloadMap.set(url, promise);
+				return promise;
+			};
+
+			const spreadImageUrls = (targetSpreadIndex: number): string[] => {
+				if (targetSpreadIndex < 0) return [];
+				const leftIdx = targetSpreadIndex * 2;
+				const rightIdx = targetSpreadIndex * 2 + 1;
+				const pageA = binder.pages[leftIdx] ?? [];
+				const pageB = binder.pages[rightIdx] ?? [];
+				return [...pageA, ...pageB]
+					.map(slotImageUrl)
+					.filter((url): url is string => Boolean(url));
+			};
+
+			const preloadSpreadImages = (targetSpreadIndex: number): void => {
+				const urls = spreadImageUrls(targetSpreadIndex);
+				urls.forEach((url) => {
+					void preloadImage(url);
+				});
+			};
+
+			const openCardSearch = (pageIdx: number, slotIdx: number): void => {
+				pendingSlot = { pageIdx, slotIdx };
+				searchBackdrop.hidden = false;
+				searchInputWrap.hidden = false;
+				searchInput.value = '';
+				searchStatus.textContent = 'Type at least 2 characters to search.';
+				searchResults.innerHTML = '';
+				lastSearchCards = [];
+				versionPickerCardName = '';
+				searchBackBtn.hidden = true;
+				searchInput.disabled = false;
+				searchInput.placeholder = 'Search card name, e.g. Lightning Bolt';
+				window.setTimeout(() => searchInput.focus(), 0);
+			};
+
+			const closeCardSearch = (): void => {
+				pendingSlot = null;
+				lastSearchCards = [];
+				versionPickerCardName = '';
+				searchBackBtn.hidden = true;
+				searchInputWrap.hidden = false;
+				searchInput.disabled = false;
+				searchInput.placeholder = 'Search card name, e.g. Lightning Bolt';
+				searchBackdrop.hidden = true;
+			};
+
+			const asSlotCard = (slot: SlotValue): SlotCard | null => {
+				if (slot && typeof slot === 'object' && 'id' in slot && 'name' in slot && 'scryfallUri' in slot) {
+					return slot as SlotCard;
+				}
+				return null;
+			};
+
+			const closeCardInspector = (): void => {
+				inspectorSlot = null;
+				inspectorLeft.classList.remove('inspector-foil', 'inspector-etched');
+				inspectorBackdrop.hidden = true;
+			};
+
+			const applyInspectorFoilClass = (foil: SlotCard['foil'] | undefined): void => {
+				inspectorLeft.classList.remove('inspector-foil', 'inspector-etched');
+				if (foil === 'foil') {
+					inspectorLeft.classList.add('inspector-foil');
+				}
+				if (foil === 'etched') {
+					inspectorLeft.classList.add('inspector-etched');
+				}
+			};
+
+			const buildPriceLabel = (card: ScryfallCard): string => {
+				const eur = card.prices?.eur;
+				const eurFoil = card.prices?.eur_foil;
+				const usd = card.prices?.usd;
+				const usdFoil = card.prices?.usd_foil;
+
+				const parts: string[] = [];
+				if (eur) parts.push(`EUR ${eur}`);
+				if (eurFoil) parts.push(`EUR Foil ${eurFoil}`);
+				if (usd) parts.push(`USD ${usd}`);
+				if (usdFoil) parts.push(`USD Foil ${usdFoil}`);
+
+				return parts.length > 0 ? parts.join(' · ') : 'Price unavailable';
+			};
+
+			const languageFlag = (lang: string | undefined): string => {
+				switch (lang) {
+					case 'en': return '�🇸';
+					case 'es': return '🇪🇸';
+					case 'fr': return '🇫🇷';
+					case 'de': return '🇩🇪';
+					case 'it': return '🇮🇹';
+					case 'pt': return '🇧🇷';
+					case 'ja': return '🇯🇵';
+					case 'ko': return '🇰🇷';
+					case 'ru': return '🇷🇺';
+					case 'zhs': return '🇨🇳';
+					case 'zht': return '🇹🇼';
+					default: return '❓';
+				}
+			};
+
+			const escapeHtml = (value: string): string => value
+				.replaceAll('&', '&amp;')
+				.replaceAll('<', '&lt;')
+				.replaceAll('>', '&gt;')
+				.replaceAll('"', '&quot;')
+				.replaceAll("'", '&#39;');
+
+			const manaClassFromSymbol = (symbol: string): string => {
+				const normalized = symbol.trim().toUpperCase().replaceAll(' ', '');
+				if (normalized === 'T') return 'tap';
+				if (normalized === 'Q') return 'untap';
+
+				return symbol
+					.trim()
+					.toLowerCase()
+					.replaceAll('/', '')
+					.replaceAll('½', 'half')
+					.replaceAll('∞', 'infinity')
+					.replaceAll(' ', '');
+			};
+
+			const manaTextToHtml = (value: string): string => {
+				const pattern = /\{([^}]+)\}/g;
+				let html = '';
+				let cursor = 0;
+				let match = pattern.exec(value);
+
+				while (match) {
+					html += escapeHtml(value.slice(cursor, match.index));
+					const symbol = match[1];
+					const symbolClass = manaClassFromSymbol(symbol);
+					html += `<i class="ms ms-cost ms-${escapeHtml(symbolClass)}" title="${escapeHtml(`{${symbol}}`)}" aria-label="${escapeHtml(`{${symbol}}`)}"></i>`;
+					cursor = match.index + match[0].length;
+					match = pattern.exec(value);
+				}
+
+				html += escapeHtml(value.slice(cursor));
+				return html.replaceAll('\n', '<br />');
+			};
+
+			const buildErrataText = (card: ScryfallCard): string => {
+				if (card.oracle_text?.trim()) {
+					const typeLine = card.type_line?.trim() ? `${card.type_line}\n\n` : '';
+					return `${typeLine}${card.oracle_text.trim()}`;
+				}
+
+				if (card.card_faces && card.card_faces.length > 0) {
+					const parts = card.card_faces
+						.map((face) => {
+							const line = face.type_line?.trim() ? `${face.type_line}\n` : '';
+							const text = face.oracle_text?.trim() ?? '';
+							return `${line}${text}`.trim();
+						})
+						.filter(Boolean);
+					if (parts.length > 0) return parts.join('\n\n//\n\n');
+				}
+
+				return 'No errata text available.';
+			};
+
+			const loadErrata = async (cardId: string): Promise<void> => {
+				const cached = errataCache.get(cardId);
+				if (cached) {
+					inspectorErrata.innerHTML = manaTextToHtml(cached.text);
+					inspectorPrice.textContent = cached.priceLabel;
+					if (inspectorSlot?.card.id === cardId && cached.normalImage) {
+						inspectorImage.src = cached.normalImage;
+						if (!inspectorSlot.card.imageUrlLarge) {
+							updateInspectedSlot({ imageUrlLarge: cached.normalImage });
+						}
+					}
+					return;
+				}
+
+				inspectorErrata.textContent = 'Loading errata...';
+				inspectorPrice.textContent = 'Loading prices...';
+				await waitForScryfallSlot();
+
+				try {
+					const response = await fetch(`https://api.scryfall.com/cards/${encodeURIComponent(cardId)}`, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (!response.ok) {
+						inspectorErrata.textContent = `Failed to load errata (HTTP ${response.status}).`;
+						return;
+					}
+
+					const payload = await response.json() as ScryfallCard;
+					const text = buildErrataText(payload);
+					const normalImage = pickCardImageNormal(payload);
+					const priceLabel = buildPriceLabel(payload);
+					errataCache.set(cardId, { text, normalImage, priceLabel });
+					inspectorErrata.innerHTML = manaTextToHtml(text);
+					inspectorPrice.textContent = priceLabel;
+					if (inspectorSlot?.card.id === cardId && normalImage) {
+						inspectorImage.src = normalImage;
+						if (!inspectorSlot.card.imageUrlLarge) {
+							updateInspectedSlot({ imageUrlLarge: normalImage });
+						}
+					}
+				} catch {
+					inspectorErrata.textContent = 'Network error while loading errata.';
+					inspectorPrice.textContent = 'Price unavailable';
+				}
+			};
+
+			const openCardInspector = (pageIdx: number, slotIdx: number, card: SlotCard): void => {
+				inspectorSlot = { pageIdx, slotIdx, card };
+				inspectorTitle.textContent = card.name;
+				const setCode = (card.setCode ?? '').toUpperCase();
+				const collector = card.collectorNumber ?? '?';
+				const langFlag = languageFlag(card.lang ?? 'en');
+				inspectorMeta.textContent = `${card.setName ?? 'Unknown Set'}${setCode ? ` (${setCode})` : ''} #${collector} · ${langFlag}`;
+				inspectorPrice.textContent = 'Loading prices...';
+				inspectorImage.src = card.imageUrlLarge ?? card.imageUrl ?? '/favicon.svg';
+				inspectorImage.alt = card.name;
+				inspectorFoilSelect.value = card.foil ?? 'nonfoil';
+				inspectorLangSelect.value = card.lang ?? 'en';
+				applyInspectorFoilClass(card.foil);
+				inspectorBackdrop.hidden = false;
+				void loadErrata(card.id);
+			};
+
+			const updateInspectedSlot = (patch: Partial<SlotCard>): void => {
+				if (!inspectorSlot) return;
+				const { pageIdx, slotIdx } = inspectorSlot;
+				const current = asSlotCard(binder.pages[pageIdx]?.[slotIdx] ?? null);
+				if (!current) return;
+				const updated: SlotCard = { ...current, ...patch };
+				binder.pages[pageIdx][slotIdx] = updated;
+				inspectorSlot = { ...inspectorSlot, card: updated };
+				persistBinder();
+				renderSpread();
+			};
+
+			const addCardToPendingSlot = (card: ScryfallCard): void => {
+				if (!pendingSlot) return;
+				const existing = asSlotCard(binder.pages[pendingSlot.pageIdx]?.[pendingSlot.slotIdx] ?? null);
+				const preferredFinish = card.finishes?.includes('foil')
+					? 'foil'
+					: (card.finishes?.includes('etched') ? 'etched' : 'nonfoil');
+				const slotCard: SlotCard = {
+					id: card.id,
+					name: card.name,
+					imageUrl: pickCardImageSmall(card),
+					imageUrlLarge: pickCardImageNormal(card),
+					scryfallUri: card.scryfall_uri,
+					setCode: card.set,
+					setName: card.set_name,
+					collectorNumber: card.collector_number,
+					lang: card.lang ?? existing?.lang ?? 'en',
+					foil: existing?.foil ?? preferredFinish
+				};
+
+				const { pageIdx, slotIdx } = pendingSlot;
+				if (!binder.pages[pageIdx]) binder.pages[pageIdx] = emptyPage();
+				binder.pages[pageIdx][slotIdx] = slotCard;
+				persistBinder();
+				renderSpread();
+				closeCardSearch();
+
+				if (inspectorSlot && inspectorSlot.pageIdx === pageIdx && inspectorSlot.slotIdx === slotIdx) {
+					openCardInspector(pageIdx, slotIdx, slotCard);
+				}
+			};
+
+			const renderSearchResults = (cards: ScryfallCard[]): void => {
+				searchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'card-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = card.name;
+					img.loading = 'lazy';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'card-result-name';
+					name.textContent = card.name;
+					const sub = document.createElement('div');
+					sub.className = 'card-result-sub';
+					sub.textContent = card.set_name ?? 'Magic: The Gathering';
+
+					textWrap.append(name, sub);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', () => {
+						void openVersionPicker(card);
+					});
+					searchResults.appendChild(button);
+				});
+			};
+
+			const renderVersionResults = (cards: ScryfallCard[]): void => {
+				searchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'card-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = `${card.name} ${card.set_name ?? ''}`.trim();
+					img.loading = 'eager';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'card-result-name';
+					name.textContent = card.name;
+
+					const setLine = document.createElement('div');
+					setLine.className = 'card-result-sub';
+					const setCode = (card.set ?? '').toUpperCase();
+					const collector = card.collector_number ?? '?';
+					const langFlag = languageFlag(card.lang ?? 'en');
+					setLine.textContent = `${card.set_name ?? 'Unknown Set'} (${setCode}) #${collector} · ${langFlag}`;
+
+					textWrap.append(name, setLine);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', () => addCardToPendingSlot(card));
+					searchResults.appendChild(button);
+				});
+			};
+
+			const sleep = (ms: number): Promise<void> => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+			const waitForScryfallSlot = async (): Promise<void> => {
+				const elapsed = Date.now() - lastScryfallRequestAt;
+				const waitMs = Math.max(0, 100 - elapsed);
+				if (waitMs > 0) {
+					await sleep(waitMs);
+				}
+				lastScryfallRequestAt = Date.now();
+			};
+
+			const openVersionPicker = async (card: ScryfallCard): Promise<void> => {
+				versionPickerCardName = card.name;
+				searchBackBtn.hidden = false;
+				searchInputWrap.hidden = true;
+				searchInput.disabled = true;
+				searchStatus.textContent = `Loading printings for ${card.name}...`;
+				searchResults.innerHTML = '';
+
+				await waitForScryfallSlot();
+
+				const printsUrl = card.prints_search_uri
+					? `${card.prints_search_uri}${card.prints_search_uri.includes('?') ? '&' : '?'}order=released&dir=desc`
+					: `https://api.scryfall.com/cards/search?q=${encodeURIComponent('!"' + card.name + '"')}&unique=prints&order=released&dir=desc`;
+
+				try {
+					const response = await fetch(printsUrl, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (!response.ok) {
+						searchStatus.textContent = `Failed to load versions (HTTP ${response.status}).`;
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallCard[] };
+					const versions = (payload.data ?? [])
+						.filter((item) => !item.digital)
+						.filter((item) => Boolean(pickCardImageSmall(item)))
+						.slice(0, 60);
+
+					searchStatus.textContent = versions.length > 0
+						? `Select printing for ${card.name}`
+						: `No printable versions found for ${card.name}.`;
+
+					renderVersionResults(versions);
+				} catch {
+					searchStatus.textContent = `Network error while loading versions for ${card.name}.`;
+				}
+			};
+
+			const restoreSearchList = (): void => {
+				versionPickerCardName = '';
+				searchBackBtn.hidden = true;
+				searchInputWrap.hidden = false;
+				searchInput.disabled = false;
+				searchInput.focus();
+				if (lastSearchCards.length > 0) {
+					searchStatus.textContent = `Found ${lastSearchCards.length} result${lastSearchCards.length === 1 ? '' : 's'}. Click one to choose version.`;
+					renderSearchResults(lastSearchCards);
+				} else {
+					searchStatus.textContent = 'Type at least 2 characters to search.';
+					searchResults.innerHTML = '';
+				}
+			};
+
+			const escapeScryfallRegex = (value: string): string => value.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&');
+
+			const buildNameContainsQuery = (value: string): string => `name:/${escapeScryfallRegex(value)}/`;
+
+			const searchCards = async (query: string): Promise<void> => {
+				const trimmed = query.trim();
+				if (trimmed.length < 2) {
+					searchStatus.textContent = 'Type at least 2 characters to search.';
+					searchResults.innerHTML = '';
+					return;
+				}
+
+				const currentToken = ++searchToken;
+				searchStatus.textContent = 'Searching Scryfall...';
+
+				await waitForScryfallSlot();
+
+				try {
+					const requestCards = async (searchQuery: string): Promise<Response> => {
+						return fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(searchQuery)}&unique=cards&order=name`, {
+							headers: {
+								'Accept': 'application/json;q=0.9,*/*;q=0.8'
+							}
+						});
+					};
+
+					let response = await requestCards(buildNameContainsQuery(trimmed));
+					if (!response.ok && response.status !== 404) {
+						response = await requestCards(`name:${trimmed}`);
+					}
+
+					if (currentToken !== searchToken) return;
+
+					if (!response.ok) {
+						if (response.status === 404) {
+							searchStatus.textContent = 'No cards found.';
+							searchResults.innerHTML = '';
+							return;
+						}
+						searchStatus.textContent = `Search failed (HTTP ${response.status}).`;
+						searchResults.innerHTML = '';
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallCard[] };
+					const nameNeedle = trimmed.toLowerCase();
+					const cards = (payload.data ?? [])
+						.filter((card) => (card.name ?? '').toLowerCase().includes(nameNeedle))
+						.slice(0, 24);
+					lastSearchCards = cards;
+					versionPickerCardName = '';
+					searchBackBtn.hidden = true;
+					searchInput.disabled = false;
+					searchStatus.textContent = cards.length > 0
+						? `Found ${cards.length} result${cards.length === 1 ? '' : 's'}. Click one to choose version.`
+						: 'No cards found.';
+					renderSearchResults(cards);
+				} catch {
+					if (currentToken !== searchToken) return;
+					lastSearchCards = [];
+					searchStatus.textContent = 'Network error while searching Scryfall.';
+					searchResults.innerHTML = '';
+				}
+			};
+
+			const renderPage = (container: HTMLElement, pageData: SlotValue[], pageIdx: number): void => {
+				container.innerHTML = '';
+
+				if (pageIdx === 0) {
+					for (let i = 0; i < 9; i++) {
+						const button = document.createElement('button');
+						button.type = 'button';
+						button.className = 'card-slot slot-cover';
+						button.disabled = true;
+						button.title = 'Binder cover';
+						container.appendChild(button);
+					}
+					return;
+				}
+
+				pageData.forEach((slot, slotIdx) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'card-slot';
+					button.title = 'Search and add card';
+
+					if (slot && typeof slot === 'object' && 'name' in slot) {
+						button.classList.add('slot-filled');
+						if (highlightedSlot && highlightedSlot.pageIdx === pageIdx && highlightedSlot.slotIdx === slotIdx) {
+							button.classList.add('slot-highlight');
+						}
+						if (slot.foil === 'foil') {
+							button.classList.add('slot-foil');
+						}
+						if (slot.foil === 'etched') {
+							button.classList.add('slot-etched');
+						}
+						button.title = slot.name;
+						if (slot.imageUrl) {
+							const img = document.createElement('img');
+							img.className = 'slot-image';
+							img.src = slot.imageUrl;
+							img.alt = slot.name;
+							img.loading = 'eager';
+							img.decoding = 'sync';
+							button.appendChild(img);
+						} else {
+							const text = document.createElement('span');
+							text.className = 'slot-text';
+							text.textContent = slot.name;
+							button.appendChild(text);
+						}
+						const cardData = asSlotCard(slot);
+						if (cardData) {
+							button.addEventListener('click', () => openCardInspector(pageIdx, slotIdx, cardData));
+						}
+					} else if (typeof slot === 'string' && slot.trim()) {
+						button.classList.add('slot-filled');
+						button.title = slot;
+						const text = document.createElement('span');
+						text.className = 'slot-text';
+						text.textContent = slot;
+						button.appendChild(text);
+					} else {
+						if ((window as any).mtgIsAuthed) {
+							button.textContent = '+';
+							button.addEventListener('click', () => openCardSearch(pageIdx, slotIdx));
+						}
+					}
+					container.appendChild(button);
+				});
+			};
+
+			const renderSpread = (): void => {
+				const leftIdx  = spreadIndex * 2;
+				const rightIdx = spreadIndex * 2 + 1;
+
+				const leftPage  = binder.pages[leftIdx]  ?? emptyPage();
+				const rightPage = binder.pages[rightIdx] ?? emptyPage();
+
+				renderPage(pageLeft, leftPage, leftIdx);
+				renderPage(pageRight, rightPage, rightIdx);
+
+				const totalPages = binder.pages.length;
+				pageCounter.textContent = `Pages ${leftIdx + 1}–${Math.min(rightIdx + 1, totalPages)} of ${totalPages}`;
+
+				prevBtn.disabled = spreadIndex === 0;
+				nextBtn.disabled = spreadIndex >= totalSpreads() - 1;
+				removePagesBtn.disabled = binder.pages.length <= 2;
+
+				// Keep neighboring spreads warm so page-turn reveals are immediate in either direction.
+				preloadSpreadImages(spreadIndex);
+				preloadSpreadImages(spreadIndex + 1);
+				preloadSpreadImages(spreadIndex - 1);
+			};
+
+			// ── navigation ────────────────────────────────────────────────────────
+			prevBtn.addEventListener('click', () => {
+				if (spreadIndex > 0) {
+					spreadIndex--;
+					renderSpread();
+				}
+			});
+
+			nextBtn.addEventListener('click', () => {
+				if (spreadIndex < totalSpreads() - 1) {
+					spreadIndex++;
+					renderSpread();
+				}
+			});
+
+			// ── add pages ─────────────────────────────────────────────────────────
+			insertPagesBtn.addEventListener('click', () => {
+				binders = readBinders();
+				binderIndex = binders.findIndex((b) => b.name === requestedName);
+				if (binderIndex === -1) return;
+
+				const insertAtPageIndex = spreadIndex * 2 + 2;
+				binders[binderIndex].pages.splice(insertAtPageIndex, 0, emptyPage(), emptyPage());
+				saveBinders(binders);
+				binder = binders[binderIndex];
+
+				// jump to the inserted spread so it can be filled immediately
+				spreadIndex = Math.floor(insertAtPageIndex / 2);
+				renderSpread();
+			});
+
+			removePagesBtn.addEventListener('click', () => {
+				binders = readBinders();
+				binderIndex = binders.findIndex((b) => b.name === requestedName);
+				if (binderIndex === -1) return;
+				if (binders[binderIndex].pages.length <= 2) return;
+				const confirmed = window.confirm('Remove this spread (2 pages)?');
+				if (!confirmed) return;
+
+				const removeAtPageIndex = spreadIndex * 2;
+				binders[binderIndex].pages.splice(removeAtPageIndex, 2);
+				saveBinders(binders);
+				binder = binders[binderIndex];
+
+				if (spreadIndex >= totalSpreads()) {
+					spreadIndex = Math.max(0, totalSpreads() - 1);
+				}
+				renderSpread();
+			});
+
+			addPagesBtn.addEventListener('click', () => {
+				binders = readBinders();
+				binderIndex = binders.findIndex((b) => b.name === requestedName);
+				if (binderIndex === -1) return;
+				binders[binderIndex].pages.push(emptyPage(), emptyPage());
+				saveBinders(binders);
+				binder = binders[binderIndex];
+				// jump to the newly added spread
+				spreadIndex = totalSpreads() - 1;
+				renderSpread();
+			});
+
+			searchCloseBtn.addEventListener('click', closeCardSearch);
+
+			inspectorCloseBtn.addEventListener('click', closeCardInspector);
+
+			inspectorBackdrop.addEventListener('click', (event) => {
+				if (event.target === inspectorBackdrop) {
+					closeCardInspector();
+				}
+			});
+
+			inspectorFoilSelect.addEventListener('change', () => {
+				const foil = inspectorFoilSelect.value as SlotCard['foil'];
+				applyInspectorFoilClass(foil);
+				updateInspectedSlot({ foil });
+			});
+
+			inspectorLangSelect.addEventListener('change', () => {
+				updateInspectedSlot({ lang: inspectorLangSelect.value });
+			});
+
+			inspectorEditVersionBtn.addEventListener('click', () => {
+				if (!inspectorSlot) return;
+				const card = inspectorSlot.card;
+				pendingSlot = { pageIdx: inspectorSlot.pageIdx, slotIdx: inspectorSlot.slotIdx };
+				closeCardInspector();
+				searchBackdrop.hidden = false;
+				searchBackBtn.hidden = true;
+				searchInputWrap.hidden = true;
+				searchInput.disabled = true;
+				searchResults.innerHTML = '';
+				void openVersionPicker({
+					id: card.id,
+					name: card.name,
+					scryfall_uri: card.scryfallUri,
+					set: card.setCode,
+					set_name: card.setName,
+					collector_number: card.collectorNumber,
+					lang: card.lang
+				});
+			});
+
+			inspectorRemoveBtn.addEventListener('click', () => {
+				if (!inspectorSlot) return;
+				const confirmed = window.confirm('Remove this card from the binder slot?');
+				if (!confirmed) return;
+				const { pageIdx, slotIdx } = inspectorSlot;
+				if (!binder.pages[pageIdx]) return;
+
+				binder.pages[pageIdx][slotIdx] = null;
+				persistBinder();
+				closeCardInspector();
+				renderSpread();
+			});
+
+			searchBackBtn.addEventListener('click', restoreSearchList);
+
+			searchBackdrop.addEventListener('click', (event) => {
+				if (event.target === searchBackdrop) {
+					closeCardSearch();
+				}
+			});
+
+			searchInput.addEventListener('input', () => {
+				if (searchDebounceTimer !== null) {
+					window.clearTimeout(searchDebounceTimer);
+				}
+				searchDebounceTimer = window.setTimeout(() => {
+					void searchCards(searchInput.value);
+				}, 280);
+			});
+
+			binderSearchInput.addEventListener('input', () => {
+				const query = binderSearchInput.value;
+				if (query.trim().length < 2) {
+					clearBinderSearchResults();
+					return;
+				}
+				renderBinderSearchHits(collectBinderSearchHits(query));
+			});
+
+			binderSearchInput.addEventListener('focus', () => {
+				const query = binderSearchInput.value;
+				if (query.trim().length < 2) return;
+				renderBinderSearchHits(collectBinderSearchHits(query));
+			});
+
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && !searchBackdrop.hidden) {
+					closeCardSearch();
+					return;
+				}
+				if (event.key === 'Escape' && !binderSearchResults.hidden) {
+					clearBinderSearchResults();
+					return;
+				}
+				if (event.key === 'Escape' && !inspectorBackdrop.hidden) {
+					closeCardInspector();
+				}
+			});
+
+			document.addEventListener('click', (event) => {
+				const target = event.target as Node;
+				if (!binderSearchResults.hidden && !binderSearchResults.contains(target) && target !== binderSearchInput) {
+					clearBinderSearchResults();
+				}
+			});
+
+			// ── init ──────────────────────────────────────────────────────────────
+			document.title = `${binder.name} – Binder`;
+			const binderAccentRgb = hexToRgb(binder.color) ?? '44, 62, 80';
+			document.body.style.setProperty('--binder-accent-rgb', binderAccentRgb);
+			nameEl.textContent = binder.name;
+			binderView.hidden = false;
+			renderSpread();
+		</script>
+	</body>
+</html>

@@ -1,0 +1,191 @@
+---
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Create Binder</title>
+		<script src="/Moltencollection/auth.js" is:inline></script>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #1a1a1a;
+				color: #fff;
+				min-height: 100vh;
+			}
+			.nav {
+				display: flex;
+				gap: 0;
+				background-color: #333;
+			}
+			.nav-btn {
+				flex: 1;
+				padding: 15px 20px;
+				background-color: #333;
+				color: white;
+				text-decoration: none;
+				text-align: center;
+				border-right: 1px solid #555;
+				transition: background-color 0.3s;
+			}
+			.nav-btn:hover {
+				background-color: #555;
+			}
+			.nav-btn.active {
+				background-color: #0066cc;
+			}
+			.nav-btn:last-child {
+				border-right: none;
+			}
+			main {
+				max-width: 700px;
+				margin: 0 auto;
+				padding: 30px 20px;
+			}
+			h1 {
+				margin-bottom: 10px;
+			}
+			p {
+				margin-bottom: 24px;
+				color: #c8d0d8;
+			}
+			.form-card {
+				background: #26323d;
+				border: 1px solid #3a4a58;
+				border-radius: 12px;
+				padding: 20px;
+			}
+			label {
+				display: block;
+				font-weight: 700;
+				margin-bottom: 8px;
+			}
+			input,
+			textarea {
+				width: 100%;
+				padding: 12px;
+				margin-bottom: 18px;
+				border: 1px solid #55697b;
+				border-radius: 8px;
+				background: #1f2a33;
+				color: #fff;
+				font-size: 16px;
+			}
+			textarea {
+				min-height: 100px;
+				resize: vertical;
+			}
+			.actions {
+				display: flex;
+				gap: 12px;
+			}
+			button,
+			.back-link {
+				padding: 12px 16px;
+				border: none;
+				border-radius: 8px;
+				font-size: 16px;
+				text-decoration: none;
+				cursor: pointer;
+			}
+			button {
+				background: #2ea043;
+				color: #fff;
+			}
+			button:hover {
+				background: #238636;
+			}
+			.back-link {
+				background: #444;
+				color: #fff;
+				display: inline-flex;
+				align-items: center;
+			}
+			.back-link:hover {
+				background: #555;
+			}
+			#status {
+				margin-top: 14px;
+				font-size: 14px;
+				color: #9dd8a8;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="nav">
+			<a href="/Moltencollection/" class="nav-btn">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn active">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+		</nav>
+
+		<main>
+			<h1>Create New Binder</h1>
+			<p>Add a name and optional description for your binder.</p>
+
+			<form id="new-binder-form" class="form-card auth-required">
+				<label for="binder-name">Binder Name</label>
+				<input id="binder-name" name="binderName" type="text" required maxlength="50" />
+
+				<label for="binder-description">Description</label>
+				<textarea id="binder-description" name="description" maxlength="300"></textarea>
+
+				<label for="binder-color">Color</label>
+				<input id="binder-color" name="color" type="color" value="#2c3e50" />
+
+				<div class="actions">
+					<button type="submit">Create Binder</button>
+					<a class="back-link" href="/Moltencollection/binders">Cancel</a>
+				</div>
+				<p id="status" aria-live="polite"></p>
+			</form>
+		</main>
+
+		<script>
+			const form = document.getElementById('new-binder-form') as HTMLFormElement | null;
+			const status = document.getElementById('status') as HTMLParagraphElement | null;
+
+			if (!form || !status) {
+				throw new Error('Required form elements are missing.');
+			}
+
+			form.addEventListener('submit', (event) => {
+				event.preventDefault();
+				const formData = new FormData(form);
+				const binderName = String(formData.get('binderName') || '').trim();
+				const description = String(formData.get('description') || '').trim();
+				const colorInput = String(formData.get('color') || '#2c3e50');
+				const color = /^#[0-9a-fA-F]{6}$/.test(colorInput) ? colorInput : '#2c3e50';
+
+				if (!binderName) {
+					status.textContent = 'Binder name is required.';
+					return;
+				}
+
+				const saved = localStorage.getItem('mtgBinders');
+				const binders = saved ? JSON.parse(saved) : [];
+
+				binders.push({
+					id: Date.now(),
+					name: binderName,
+					description,
+					color
+				});
+
+				localStorage.setItem('mtgBinders', JSON.stringify(binders));
+				status.textContent = 'Binder created. Redirecting...';
+				setTimeout(() => {
+					window.location.href = '/Moltencollection/binders';
+				}, 500);
+			});
+		</script>
+	</body>
+</html>

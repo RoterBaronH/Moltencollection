@@ -1,0 +1,3478 @@
+---
+
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>My Decks</title>
+		<script src="/Moltencollection/auth.js" is:inline></script>
+		<style is:global>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #1a1a1a;
+				color: #fff;
+				min-height: 100vh;
+			}
+			.ms {
+				line-height: 1;
+				vertical-align: middle;
+			}
+			.ms-cost {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 1.12em;
+				height: 1.12em;
+				font-size: 1em;
+			}
+			.ms-cost::before {
+				font-size: 0.8em;
+			}
+			.ms-cost.ms-w::before,
+			.ms-cost.ms-u::before,
+			.ms-cost.ms-b::before,
+			.ms-cost.ms-r::before,
+			.ms-cost.ms-g::before {
+				font-size: 0.88em;
+			}
+			.nav {
+				display: flex;
+				gap: 0;
+				background-color: #333;
+			}
+			.nav-btn {
+				flex: 1;
+				padding: 15px 20px;
+				background-color: #333;
+				color: white;
+				text-decoration: none;
+				text-align: center;
+				cursor: pointer;
+				border: none;
+				border-right: 1px solid #555;
+				transition: background-color 0.3s;
+			}
+			.nav-btn:hover {
+				background-color: #555;
+			}
+			.nav-btn.active {
+				background-color: #0066cc;
+			}
+			.nav-btn:last-child {
+				border-right: none;
+			}
+			main {
+				padding: 0;
+				margin: 0;
+			}
+			#deck-home-view > h1,
+			#deck-home-view > p {
+				padding: 20px;
+				max-width: 1000px;
+				margin: 0;
+				color: #fff;
+			}
+			#deck-home-view > p {
+				color: #fff;
+			}
+			.deck-grid {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 24px;
+				padding: 24px 20px;
+				max-width: 1200px;
+				margin: 0;
+			}
+			.deck-card {
+				position: relative;
+				width: 150px;
+				height: 180px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 10px;
+				padding: 16px 12px;
+				text-align: center;
+				border-radius: 14px;
+				border: 0;
+				font-family: inherit;
+				cursor: pointer;
+				background: #2c3e50;
+				color: #fff;
+				text-decoration: none;
+				box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+				transition: transform 0.2s, box-shadow 0.2s;
+				overflow: hidden;
+			}
+			.deck-card.select-deck-card {
+				cursor: grab;
+				padding-top: 36px;
+			}
+			.deck-card.select-deck-card.is-dragging {
+				opacity: 0.45;
+			}
+			.deck-card.select-deck-card.is-drop-target {
+				outline: 2px dashed rgba(255, 255, 255, 0.9);
+				outline-offset: 4px;
+			}
+			.deck-card:hover {
+				transform: translateY(-6px);
+				filter: brightness(1.15);
+				box-shadow: 0 14px 24px rgba(0, 0, 0, 0.5);
+			}
+			.deck-card-name {
+				margin: 0;
+				font-size: 1.1rem;
+				font-weight: bold;
+				text-align: center;
+				line-height: 1.2;
+				word-break: break-word;
+			}
+			.deck-card-format {
+				position: absolute;
+				top: 8px;
+				left: 50%;
+				transform: translateX(-50%);
+				display: inline-flex;
+				align-items: center;
+				padding: 3px 9px;
+				border-radius: 999px;
+				background: rgba(10, 14, 18, 0.45);
+				border: 1px solid rgba(255, 255, 255, 0.45);
+				font-size: 11px;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
+				white-space: nowrap;
+			}
+			.deck-card-colors {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 4px;
+				margin-top: 2px;
+			}
+			.deck-card-colors .ms {
+				font-size: 14px;
+			}
+			.deck-card-colors .ms-cost::before {
+				font-size: 0.88em;
+			}
+			.add-deck-card {
+				background: rgba(255, 255, 255, 0.75);
+				backdrop-filter: blur(4px);
+				color: #333;
+				font-size: 1.25rem;
+				font-weight: bold;
+				line-height: 1;
+			}
+			.add-deck-card .plus {
+				font-size: 3rem;
+				line-height: 1;
+			}
+			.add-deck-card:hover {
+				background: rgba(255, 255, 255, 0.9);
+			}
+			.deck-edit-btn {
+				position: absolute;
+				bottom: 8px;
+				right: 8px;
+				z-index: 2;
+				padding: 4px 8px;
+				border: none;
+				border-radius: 6px;
+				background: rgba(0, 0, 0, 0.55);
+				color: #fff;
+				font-size: 11px;
+				cursor: pointer;
+				transition: background 0.2s;
+			}
+			.deck-edit-btn:hover {
+				background: rgba(0, 0, 0, 0.8);
+			}
+			.deck-editor-backdrop {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.7);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 20px;
+				z-index: 1000;
+			}
+			.deck-editor-backdrop[hidden] {
+				display: none;
+			}
+			.deck-editor-modal {
+				width: 100%;
+				max-width: 560px;
+				background: #26323d;
+				border: 1px solid #3a4a58;
+				border-radius: 12px;
+				padding: 20px;
+				position: relative;
+				color: #fff;
+			}
+			.deck-editor-close {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				width: 30px;
+				height: 30px;
+				border: none;
+				border-radius: 8px;
+				background: #374757;
+				color: #fff;
+				font-size: 18px;
+				line-height: 1;
+				cursor: pointer;
+			}
+			.deck-editor-close:hover {
+				background: #4a5f73;
+			}
+			.deck-editor-modal h2 {
+				margin-bottom: 14px;
+			}
+			.deck-editor-modal label {
+				display: block;
+				font-weight: 700;
+				margin-bottom: 8px;
+			}
+			.deck-color-row[hidden] {
+				display: none;
+			}
+			.deck-editor-modal input,
+			.deck-editor-modal select {
+				width: 100%;
+				padding: 10px 12px;
+				margin-bottom: 14px;
+				border: 1px solid #55697b;
+				border-radius: 8px;
+				background: #1f2a33;
+				color: #fff;
+				font-size: 16px;
+			}
+			.deck-editor-modal input[type='color'] {
+				height: 50px;
+				padding: 5px;
+			}
+			.deck-editor-actions {
+				display: flex;
+				gap: 10px;
+				margin-top: 6px;
+			}
+			.deck-editor-actions button {
+				padding: 10px 14px;
+				border: none;
+				border-radius: 8px;
+				font-size: 15px;
+				cursor: pointer;
+			}
+			#save-deck-btn {
+				background: #2ea043;
+				color: #fff;
+				margin-left: auto;
+			}
+			#delete-deck-btn {
+				background: #c03636;
+				color: #fff;
+			}
+			#deck-editor-status {
+				margin-top: 12px;
+				font-size: 14px;
+				color: #9dd8a8;
+			}
+			.back-btn {
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #41586b;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.back-btn:hover {
+				background: #1b2633;
+			}
+			.deck-header {
+				display: flex;
+				justify-content: flex-start;
+				align-items: flex-start;
+				gap: 12px;
+				flex-wrap: wrap;
+				padding: 20px 20px 0;
+				margin-bottom: 8px;
+			}
+			.deck-title {
+				font-size: 30px;
+				font-weight: 700;
+			}
+			.deck-title-wrap {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+			.deck-format-pill {
+				display: inline-flex;
+				align-items: center;
+				padding: 6px 10px;
+				border-radius: 999px;
+				background: #1f2f3f;
+				border: 1px solid #324457;
+				font-size: 12px;
+				font-weight: 700;
+				color: #dbe8f5;
+			}
+			.deck-controls {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+				flex-wrap: wrap;
+				justify-content: flex-start;
+			}
+			.select,
+			.input {
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #41586b;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+			}
+			.select {
+				min-width: 240px;
+			}
+			.input {
+				min-width: 280px;
+			}
+			.status {
+				display: none;
+			}
+			.deck-layout {
+				display: grid;
+				grid-template-columns: 360px minmax(0, 1fr);
+				gap: 14px;
+				padding: 0 20px 20px;
+				width: 100%;
+				align-items: start;
+			}
+			.panel {
+				background: #111923;
+				border: 1px solid #324457;
+				border-radius: 12px;
+			}
+			.deck-list-panel {
+				grid-column: 2;
+				grid-row: 1;
+			}
+			.deck-list-head {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 10px;
+				padding: 12px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.deck-add-card-wrap {
+				display: flex;
+				gap: 8px;
+				width: 100%;
+			}
+			.deck-add-card-input {
+				flex: 1;
+				min-width: 0;
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+			}
+
+			.deck-search-panel {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				padding: 12px;
+				border-top: 1px solid #2a3a4a;
+			}
+			.deck-search-panel[hidden] {
+				display: none;
+			}
+			.deck-search-head {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 10px;
+			}
+			.deck-search-title {
+				font-size: 16px;
+				font-weight: 700;
+				color: #f4f8fc;
+			}
+			.deck-search-actions {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			.deck-search-back,
+			.deck-search-close {
+				padding: 8px 12px;
+				border-radius: 8px;
+				border: none;
+				background: #2f81f7;
+				color: #fff;
+				cursor: pointer;
+			}
+			.deck-search-close {
+				width: 34px;
+				height: 34px;
+				padding: 0;
+				font-size: 22px;
+				line-height: 1;
+			}
+			.deck-search-status {
+				font-size: 13px;
+				color: #9db0bf;
+			}
+			.deck-search-results {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+				gap: 10px;
+				max-height: 420px;
+				overflow: auto;
+				padding-right: 2px;
+			}
+			.deck-sections {
+				padding: 10px;
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+			.deck-section {
+				border-bottom: 1px solid #273646;
+				padding-bottom: 10px;
+				overflow: hidden;
+				background: transparent;
+			}
+			.deck-section:last-child {
+				border-bottom: none;
+				padding-bottom: 0;
+			}
+			.deck-card-grid {
+				display: flex;
+				flex-direction: column;
+				gap: 0;
+				padding: 0;
+			}
+			.deck-section-head {
+				background: transparent;
+				padding: 0 0 8px;
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
+				gap: 8px;
+				font-size: 12px;
+				font-weight: 700;
+				color: #9db0bf;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+			.deck-section-name,
+			.deck-section-count {
+				display: inline-flex;
+				align-items: center;
+			}
+			.deck-section-count {
+				padding: 0;
+				border: none;
+				background: transparent;
+				font-size: 12px;
+			}
+			.deck-row {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 7px 0;
+				border: none;
+				border-radius: 0;
+				background: transparent;
+				cursor: pointer;
+				text-align: left;
+				width: 100%;
+				margin-top: 0;
+				border-bottom: 1px solid rgba(39, 54, 70, 0.8);
+			}
+			.deck-row:last-child {
+				border-bottom: none;
+			}
+			.deck-row:hover {
+				background: rgba(255, 255, 255, 0.03);
+			}
+			.deck-row.is-proxy {
+				opacity: 0.7;
+			}
+			.deck-row-proxy-badge {
+				display: inline-block;
+				padding: 0 4px;
+				margin-left: 4px;
+				border-radius: 3px;
+				background: #b8930b;
+				color: #000;
+				font-size: 10px;
+				font-weight: 700;
+				line-height: 1.5;
+				vertical-align: middle;
+			}
+			.deck-row-qty {
+				width: 28px;
+				flex-shrink: 0;
+				font-size: 13px;
+				font-weight: 700;
+				color: #dbe8f5;
+				text-align: right;
+			}
+			.deck-row-name {
+				flex: 1;
+				min-width: 0;
+				font-size: 14px;
+				font-weight: 500;
+				color: #f0f6fc;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.deck-row-cost {
+				margin-left: auto;
+				font-size: 12px;
+				font-weight: 600;
+				color: #9db0bf;
+				white-space: nowrap;
+				display: inline-flex;
+				align-items: center;
+				gap: 2px;
+			}
+			.deck-row-cost .ms {
+				font-size: 15px;
+				line-height: 1;
+			}
+
+			.stats {
+				grid-column: 1;
+				grid-row: 1;
+				width: 100%;
+				padding: 12px;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+			}
+			.commander-preview {
+				position: relative;
+				width: 100%;
+				border: 0;
+				padding: 0;
+				background: transparent;
+				cursor: pointer;
+				overflow: hidden;
+				border-radius: 10px;
+			}
+			.commander-preview.preview-foil::after,
+			.commander-preview.preview-etched::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				border-radius: 10px;
+			}
+			.commander-preview.preview-foil::after {
+				background:
+					linear-gradient(115deg, rgba(255, 255, 255, 0.34) 6%, rgba(255, 255, 255, 0.02) 24%, rgba(255, 255, 255, 0.28) 40%, rgba(255, 255, 255, 0.03) 58%, rgba(255, 255, 255, 0.22) 78%, rgba(255, 255, 255, 0.04) 100%),
+					linear-gradient(135deg, rgba(147, 197, 253, 0.24) 16%, rgba(244, 114, 182, 0.21) 52%, rgba(250, 204, 21, 0.24) 84%);
+				mix-blend-mode: screen;
+			}
+			.commander-preview.preview-etched::after {
+				background:
+					linear-gradient(120deg, rgba(255, 248, 220, 0.28) 8%, rgba(255, 248, 220, 0.02) 46%, rgba(255, 248, 220, 0.22) 88%),
+					linear-gradient(145deg, rgba(245, 158, 11, 0.24) 0%, rgba(120, 53, 15, 0.18) 40%, rgba(253, 230, 138, 0.24) 100%);
+				mix-blend-mode: screen;
+			}
+			.commander-preview.is-static {
+				cursor: default;
+			}
+			.preview {
+				width: 100%;
+				aspect-ratio: 5 / 7;
+				border-radius: 10px;
+				background: #0d1117;
+				border: 1px solid #273646;
+				object-fit: cover;
+			}
+			.commander-inspector-backdrop {
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.72);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				z-index: 60;
+			}
+			.commander-inspector-backdrop[hidden] {
+				display: none;
+			}
+			.commander-inspector-modal {
+				width: min(980px, 100%);
+				max-height: 84vh;
+				overflow: hidden;
+				border-radius: 14px;
+				border: 1px solid #324457;
+				background: #111923;
+				display: grid;
+				grid-template-columns: minmax(280px, 360px) 1fr;
+			}
+			.commander-inspector-left {
+				padding: 16px;
+				border-right: 1px solid #2a3a4a;
+				display: flex;
+				position: relative;
+				justify-content: center;
+				align-items: flex-start;
+				overflow: auto;
+			}
+			.commander-inspector-left.inspector-foil::after,
+			.commander-inspector-left.inspector-etched::after {
+				content: '';
+				position: absolute;
+				inset: 16px;
+				pointer-events: none;
+				border-radius: 10px;
+			}
+			.commander-inspector-left.inspector-foil::after {
+				background:
+					linear-gradient(115deg, rgba(255, 255, 255, 0.44) 6%, rgba(255, 255, 255, 0.03) 24%, rgba(255, 255, 255, 0.36) 40%, rgba(255, 255, 255, 0.04) 58%, rgba(255, 255, 255, 0.3) 78%, rgba(255, 255, 255, 0.06) 100%),
+					linear-gradient(135deg, rgba(147, 197, 253, 0.28) 16%, rgba(244, 114, 182, 0.24) 52%, rgba(250, 204, 21, 0.28) 84%);
+				mix-blend-mode: screen;
+			}
+			.commander-inspector-left.inspector-etched::after {
+				background:
+					linear-gradient(120deg, rgba(255, 248, 220, 0.34) 8%, rgba(255, 248, 220, 0.03) 46%, rgba(255, 248, 220, 0.28) 88%),
+					linear-gradient(145deg, rgba(245, 158, 11, 0.3) 0%, rgba(120, 53, 15, 0.2) 40%, rgba(253, 230, 138, 0.3) 100%);
+				mix-blend-mode: screen;
+			}
+			.commander-inspector-image {
+				width: 100%;
+				max-width: 320px;
+				border-radius: 10px;
+				box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+				display: block;
+			}
+			.commander-inspector-right {
+				display: flex;
+				flex-direction: column;
+				min-height: 0;
+			}
+			.commander-inspector-header {
+				padding: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.commander-inspector-title {
+				font-size: 16px;
+				font-weight: 700;
+				color: #e7f0f8;
+			}
+			.commander-inspector-meta,
+			.commander-inspector-price {
+				margin-top: 4px;
+				font-size: 12px;
+				color: #9db0bf;
+			}
+			.commander-inspector-actions {
+				display: flex;
+				align-items: center;
+				display: flex;
+				gap: 8px;
+			}
+			.commander-inspector-remove,
+			.commander-inspector-add,
+			.commander-inspector-proxy,
+			.commander-inspector-close,
+			.commander-inspector-option {
+				padding: 8px 10px;
+				border-radius: 8px;
+				color: #fff;
+				cursor: pointer;
+				font-size: 12px;
+				line-height: 1;
+			}
+			.commander-inspector-remove {
+				border: 1px solid #8b1d1d;
+				background: #c03636;
+			}
+			.commander-inspector-remove:hover {
+				background: #dc4a4a;
+			}
+			.commander-inspector-add {
+				border: 1px solid #1f7a35;
+				background: #2ea043;
+			}
+			.commander-inspector-add:hover {
+				background: #3bb257;
+			}
+			.commander-inspector-add:disabled {
+				border: 1px solid #5a6470;
+				background: #6b7280;
+				color: #d4d8de;
+				cursor: not-allowed;
+			}
+			.commander-inspector-add:disabled:hover {
+				background: #6b7280;
+			}
+			.commander-inspector-proxy {
+				border: 1px solid #6b5b00;
+				background: #8a7200;
+				color: #fff;
+			}
+			.commander-inspector-proxy:hover {
+				background: #a38800;
+			}
+			.commander-inspector-proxy.is-proxy {
+				border: 1px solid #c9a800;
+				background: #d4a80e;
+				color: #000;
+			}
+			.commander-inspector-proxy.is-proxy:hover {
+				background: #e6bb1a;
+			}
+			.commander-inspector-close {
+				border: 0;
+				background: #2e404f;
+			}
+			.commander-inspector-close:hover {
+				background: #3d5a6e;
+			}
+			.commander-inspector-controls {
+				padding: 12px 14px;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				border-bottom: 1px solid #2a3a4a;
+			}
+			.commander-inspector-field {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+			.commander-inspector-label {
+				font-size: 12px;
+				color: #9db0bf;
+			}
+			.commander-inspector-select {
+				padding: 9px 10px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 13px;
+			}
+			.commander-inspector-option {
+				border: 0;
+				background: #2a3745;
+				text-align: left;
+				grid-column: 1 / -1;
+				padding: 10px 12px;
+				line-height: 1.2;
+			}
+			.commander-inspector-option:hover {
+				background: #394a5c;
+			}
+			.commander-inspector-errata {
+				padding: 12px 14px;
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+				min-height: 0;
+				overflow: auto;
+			}
+			.commander-inspector-errata-title {
+				font-size: 12px;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: #dbe8f5;
+			}
+			.commander-inspector-errata-text {
+				white-space: pre-wrap;
+				line-height: 1.4;
+				font-size: 13px;
+				color: #c6d4e1;
+			}
+			.commander-inspector-errata-text .ms {
+				font-size: 15px;
+				line-height: 1;
+				margin: 0 1px;
+			}
+			.commander-search-backdrop {
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.72);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+				z-index: 61;
+			}
+			.commander-search-backdrop[hidden] {
+				display: none;
+			}
+			.commander-search-modal {
+				width: min(860px, 100%);
+				max-height: 84vh;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				padding: 16px;
+				border-radius: 14px;
+				border: 1px solid #324457;
+				background: #111923;
+			}
+			.commander-search-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 10px;
+			}
+			.commander-search-title {
+				font-size: 18px;
+				font-weight: 700;
+				color: #f4f8fc;
+			}
+			.commander-search-actions {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			.commander-search-back,
+			.commander-search-close {
+				padding: 8px 12px;
+				border-radius: 8px;
+				border: none;
+				background: #2f81f7;
+				color: #fff;
+				cursor: pointer;
+			}
+			.commander-search-close {
+				width: 34px;
+				height: 34px;
+				padding: 0;
+				font-size: 22px;
+				line-height: 1;
+			}
+			.commander-search-input {
+				width: 100%;
+				padding: 10px 12px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #0d1117;
+				color: #fff;
+				font-size: 14px;
+			}
+			.commander-search-status {
+				font-size: 13px;
+				color: #9db0bf;
+			}
+			.commander-search-results {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+				gap: 10px;
+				overflow: auto;
+				padding-right: 2px;
+			}
+			.commander-result {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+				width: 100%;
+				padding: 8px;
+				border-radius: 10px;
+				border: 1px solid #2f4254;
+				background: #162331;
+				color: #e5eff8;
+				text-align: left;
+				cursor: pointer;
+			}
+			.commander-result:hover {
+				background: #1c2e3f;
+			}
+			.commander-result img {
+				width: 54px;
+				height: 75px;
+				border-radius: 6px;
+				object-fit: cover;
+				flex-shrink: 0;
+			}
+			.commander-result-name {
+				font-size: 14px;
+				font-weight: 700;
+			}
+			.commander-result-sub {
+				font-size: 12px;
+				color: #a9bbca;
+				margin-top: 2px;
+			}
+			@media (max-width: 760px) {
+				.commander-inspector-modal {
+					grid-template-columns: 1fr;
+				}
+				.commander-inspector-left {
+					border-right: 0;
+					border-bottom: 1px solid #2a3a4a;
+				}
+				.commander-inspector-header {
+					flex-direction: column;
+				}
+				.commander-search-modal {
+					padding: 12px;
+				}
+				.commander-search-results {
+					grid-template-columns: 1fr;
+				}
+				.deck-search-results {
+					grid-template-columns: 1fr;
+				}
+			}
+			.stats-grid {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 8px;
+			}
+			.stat-box {
+				border: 1px solid #273646;
+				border-radius: 8px;
+				padding: 8px;
+				background: #131f2c;
+			}
+			.stat-label {
+				font-size: 11px;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: #9db0bf;
+			}
+			.stat-value {
+				font-size: 18px;
+				font-weight: 700;
+				color: #e7f2fb;
+			}
+			.colors {
+				display: flex;
+				gap: 6px;
+				flex-wrap: wrap;
+			}
+			.color-chip {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: 2px;
+				border-radius: 999px;
+				font-size: 12px;
+				border: 0;
+				background: transparent;
+			}
+			.color-chip .ms {
+				font-size: 16px;
+			}
+			.color-chip .ms-cost::before {
+				font-size: 0.88em;
+			}
+			.color-W { background: #f4f5f7; color: #111; }
+			.color-U { background: #1d4ed8; color: #dbeafe; }
+			.color-B { background: #111827; color: #f3f4f6; }
+			.color-R { background: #b91c1c; color: #fee2e2; }
+			.color-G { background: #166534; color: #dcfce7; }
+			.curve {
+				display: flex;
+				align-items: flex-end;
+				gap: 6px;
+				height: 120px;
+				padding-top: 8px;
+			}
+			.curve-col {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 4px;
+			}
+			.curve-bar {
+				width: 100%;
+				min-height: 2px;
+				background: linear-gradient(180deg, #4da3ff, #1f6feb);
+				border-radius: 4px 4px 0 0;
+			}
+			.curve-num {
+				font-size: 11px;
+				color: #9db0bf;
+			}
+			.empty {
+				padding: 20px;
+				color: #b9c9d6;
+				border: 1px solid #324457;
+				border-radius: 12px;
+				background: #111923;
+				margin: 0 20px 20px;
+				max-width: 1100px;
+			}
+			@media (max-width: 1100px) {
+				.deck-layout {
+					grid-template-columns: 1fr;
+				}
+				.deck-list-panel,
+				.stats {
+					grid-column: auto;
+					grid-row: auto;
+				}
+				.input,
+				.select {
+					min-width: 0;
+					width: 100%;
+				}
+				.deck-controls {
+					width: 100%;
+				}
+				.deck-row {
+					padding: 7px 0;
+				}
+				.deck-row-cost {
+					display: none;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="nav">
+			<a href="/Moltencollection/" class="nav-btn">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn active">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+		</nav>
+
+		<main>
+			<section id="deck-home-view">
+				<h1>My Decks</h1>
+				<p>Create and manage your MTG decks here.</p>
+				<div id="deck-grid" class="deck-grid">
+					<button id="open-deck-btn" class="deck-card add-deck-card auth-required" type="button" title="Create new deck">
+						<span class="plus">+</span>
+						<span>Add Deck</span>
+					</button>
+				</div>
+
+				<div id="deck-editor-backdrop" class="deck-editor-backdrop" hidden>
+					<div class="deck-editor-modal">
+						<button id="close-deck-editor-btn" class="deck-editor-close" type="button" aria-label="Close">&times;</button>
+						<h2 id="deck-editor-title">Edit Deck</h2>
+						<form id="deck-editor-form">
+							<label for="edit-deck-name">Name</label>
+							<input id="edit-deck-name" type="text" maxlength="50" required />
+
+							<div id="deck-color-row" class="deck-color-row">
+								<label for="edit-deck-color">Color</label>
+								<input id="edit-deck-color" type="color" value="#2c3e50" />
+							</div>
+
+							<label for="edit-deck-format">Format</label>
+							<select id="edit-deck-format">
+								<option value="commander">Commander</option>
+								<option value="standard">Standard</option>
+								<option value="modern">Modern</option>
+								<option value="pioneer">Pioneer</option>
+								<option value="legacy">Legacy</option>
+								<option value="vintage">Vintage</option>
+								<option value="pauper">Pauper</option>
+								<option value="brawl">Brawl</option>
+								<option value="custom">Custom</option>
+							</select>
+
+							<div class="deck-editor-actions">
+								<button id="delete-deck-btn" type="button">Delete</button>
+								<button id="save-deck-btn" type="submit">Save</button>
+							</div>
+							<p id="deck-editor-status" aria-live="polite"></p>
+						</form>
+					</div>
+				</div>
+			</section>
+
+			<section id="deck-detail-view" hidden>
+				<div class="deck-header">
+					<div class="deck-title-wrap">
+						<button id="back-to-decks-btn-left" class="back-btn" type="button" title="Back to decks">&larr; Back</button>
+						<h1 class="deck-title" id="deck-detail-title">My Decks</h1>
+						<span id="deck-detail-format" class="deck-format-pill">Custom</span>
+					</div>
+					<div class="deck-controls"></div>
+				</div>
+
+				<div id="deck-status" class="status"></div>
+				<div id="deck-layout" class="deck-layout" hidden>
+					<section class="panel deck-list-panel">
+						<div class="deck-list-head">
+							<div class="deck-add-card-wrap auth-required">
+								<input id="deck-add-card-input" class="deck-add-card-input" type="text" placeholder="Search and add cards" autocomplete="off" />
+							</div>
+						</div>
+						<div id="deck-search-panel" class="deck-search-panel" hidden>
+							<div class="deck-search-head">
+								<span id="deck-search-title" class="deck-search-title">Search Cards</span>
+								<div class="deck-search-actions">
+									<button id="deck-search-back" class="deck-search-back" type="button" hidden>Back</button>
+									<button id="deck-search-close" class="deck-search-close" type="button" aria-label="Close">&times;</button>
+								</div>
+							</div>
+							<div id="deck-search-status" class="deck-search-status">Type at least 2 characters to search.</div>
+							<div id="deck-search-results" class="deck-search-results"></div>
+						</div>
+						<div id="deck-sections" class="deck-sections"></div>
+					</section>
+					<aside class="panel stats">
+						<button id="commander-preview" class="commander-preview is-static" type="button">
+							<img id="deck-preview" class="preview" src="/Moltencollection/favicon.svg" alt="Card preview" />
+						</button>
+						<div class="stats-grid">
+							<div class="stat-box"><div class="stat-label">Card Count</div><div id="stat-cards" class="stat-value">0</div></div>
+							<div id="sideboard-stat" class="stat-box" hidden><div class="stat-label">Sideboard</div><div id="stat-sideboard" class="stat-value">0/15</div></div>
+							<div class="stat-box"><div class="stat-label">Avg MV</div><div id="stat-avg-mv" class="stat-value">0.00</div></div>
+							<div class="stat-box"><div class="stat-label">Price</div><div id="stat-price" class="stat-value">EUR 0.00</div></div>
+							<div class="stat-box"><div class="stat-label">Nonlands</div><div id="stat-nonlands" class="stat-value">0</div></div>
+						</div>
+						<div>
+							<div class="stat-label" style="margin-bottom:6px">Color Distribution</div>
+							<div id="deck-colors" class="colors"></div>
+						</div>
+						<div>
+							<div class="stat-label" style="margin-bottom:6px">Mana Curve</div>
+							<div id="deck-curve" class="curve"></div>
+						</div>
+					</aside>
+				</div>
+
+				<div id="commander-inspector-backdrop" class="commander-inspector-backdrop" hidden>
+					<div class="commander-inspector-modal" role="dialog" aria-modal="true" aria-labelledby="commander-inspector-title">
+						<div class="commander-inspector-left">
+							<img id="commander-inspector-image" class="commander-inspector-image" alt="Commander" src="/Moltencollection/favicon.svg" />
+						</div>
+						<div class="commander-inspector-right">
+							<div class="commander-inspector-header">
+								<div>
+									<div id="commander-inspector-title" class="commander-inspector-title">Commander</div>
+									<div id="commander-inspector-meta" class="commander-inspector-meta"></div>
+									<div id="commander-inspector-price" class="commander-inspector-price"></div>
+								</div>
+								<div class="commander-inspector-actions">
+									<button id="remove-commander-btn" class="commander-inspector-remove auth-required" type="button">Remove</button>
+									<button id="proxy-toggle-btn" class="commander-inspector-proxy auth-required" type="button">Proxy</button>
+									<button id="add-to-collection-btn" class="commander-inspector-add auth-required" type="button">Add to Collection</button>
+									<button id="close-commander-inspector-btn" class="commander-inspector-close" type="button" aria-label="Close">&times;</button>
+								</div>
+							</div>
+							<div class="commander-inspector-controls auth-required">
+								<button id="change-commander-btn" class="commander-inspector-option" type="button">Select Version</button>
+								<div class="commander-inspector-field">
+									<label for="commander-inspector-foil" class="commander-inspector-label">Foiling</label>
+									<select id="commander-inspector-foil" class="commander-inspector-select">
+										<option value="nonfoil">Nonfoil</option>
+										<option value="foil">Foil</option>
+										<option value="etched">Etched</option>
+									</select>
+								</div>
+								<div class="commander-inspector-field">
+									<label for="commander-inspector-lang" class="commander-inspector-label">Language</label>
+									<select id="commander-inspector-lang" class="commander-inspector-select">
+										<option value="en">English</option>
+										<option value="es">Spanish</option>
+										<option value="fr">French</option>
+										<option value="de">German</option>
+										<option value="it">Italian</option>
+										<option value="pt">Portuguese</option>
+										<option value="ja">Japanese</option>
+										<option value="ko">Korean</option>
+										<option value="ru">Russian</option>
+										<option value="zhs">Chinese Simplified</option>
+										<option value="zht">Chinese Traditional</option>
+									</select>
+								</div>
+							</div>
+							<div class="commander-inspector-errata">
+								<div class="commander-inspector-errata-title">Oracle Text</div>
+								<div id="commander-inspector-errata" class="commander-inspector-errata-text">Loading...</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="commander-search-backdrop" class="commander-search-backdrop" hidden>
+					<div class="commander-search-modal" role="dialog" aria-modal="true" aria-labelledby="commander-search-title">
+						<div class="commander-search-header">
+							<span id="commander-search-title" class="commander-search-title">Search Commander</span>
+							<div class="commander-search-actions">
+								<button id="commander-search-back" class="commander-search-back" type="button" hidden>Back</button>
+								<button id="commander-search-close" class="commander-search-close" type="button" aria-label="Close">&times;</button>
+							</div>
+						</div>
+						<input id="commander-search-input" class="commander-search-input" type="text" placeholder="Search commander name" autocomplete="off" />
+						<div id="commander-search-status" class="commander-search-status">Type at least 2 characters to search.</div>
+						<div id="commander-search-results" class="commander-search-results"></div>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<script>
+			type SlotCard = {
+				id: string;
+				name: string;
+				imageUrl: string | null;
+				imageUrlLarge?: string | null;
+				scryfallUri: string;
+				setCode?: string;
+				setName?: string;
+				collectorNumber?: string;
+				lang?: string;
+				foil?: 'nonfoil' | 'foil' | 'etched';
+				collectionSource?: string;
+				inDeck?: boolean;
+				deckName?: string;
+				proxy?: boolean;
+			};
+
+			type ScryfallSearchCard = {
+				id: string;
+				name: string;
+				scryfall_uri: string;
+				prints_search_uri?: string;
+				digital?: boolean;
+				set?: string;
+				set_name?: string;
+				collector_number?: string;
+				lang?: string;
+				image_uris?: { small?: string; normal?: string };
+				card_faces?: Array<{ image_uris?: { small?: string; normal?: string } }>;
+			};
+
+			type ScryfallOracleCard = {
+				type_line?: string;
+				oracle_text?: string;
+				card_faces?: Array<{
+					type_line?: string;
+					oracle_text?: string;
+				}>;
+			};
+
+			type DeckFormat = 'commander' | 'standard' | 'modern' | 'pioneer' | 'legacy' | 'vintage' | 'pauper' | 'brawl' | 'custom';
+
+			type CardMeta = {
+				cmc: number;
+				manaCost: string;
+				typeLine: string;
+				colorIdentity: string[];
+				priceEur: string;
+				priceEurFoil: string;
+				priceUsd: string;
+				priceUsdFoil: string;
+			};
+
+			type DeckRow = {
+				key: string;
+				count: number;
+				card: SlotCard;
+				meta: CardMeta;
+				section: string;
+				price: number;
+			};
+
+			type BinderSlotValue = SlotCard | string | null;
+
+			type BinderStorage = {
+				id: number;
+				name: string;
+				color?: string;
+				pages?: BinderSlotValue[][];
+			};
+
+			const DECK_CARD_MAP_KEY = 'mtgDeckCards';
+			const DECK_NAMES_KEY = 'mtgDeckNames';
+			const DECK_FORMATS_KEY = 'mtgDeckFormats';
+			const DECK_COLORS_KEY = 'mtgDeckColors';
+			const DECK_COMMANDERS_KEY = 'mtgDeckCommanders';
+			const META_CACHE_KEY = 'mtgDeckCardMeta';
+			const BINDER_STORAGE_KEY = 'mtgBinders';
+			const COLLECTION_STORAGE_KEY = 'mtgCollection';
+			const BINDER_SLOTS_PER_PAGE = 9;
+
+			const deckHomeView = document.getElementById('deck-home-view') as HTMLElement;
+			const deckDetailView = document.getElementById('deck-detail-view') as HTMLElement;
+			const deckGrid = document.getElementById('deck-grid') as HTMLElement;
+			const openDeckBtn = document.getElementById('open-deck-btn') as HTMLButtonElement;
+			const deckEditorBackdrop = document.getElementById('deck-editor-backdrop') as HTMLElement;
+			const deckEditorTitle = document.getElementById('deck-editor-title') as HTMLElement;
+			const deckEditorForm = document.getElementById('deck-editor-form') as HTMLFormElement;
+			const editDeckNameInput = document.getElementById('edit-deck-name') as HTMLInputElement;
+			const deckColorRow = document.getElementById('deck-color-row') as HTMLElement;
+			const editDeckColorInput = document.getElementById('edit-deck-color') as HTMLInputElement;
+			const editDeckFormatSelect = document.getElementById('edit-deck-format') as HTMLSelectElement;
+			const saveDeckBtn = document.getElementById('save-deck-btn') as HTMLButtonElement;
+			const deleteDeckBtn = document.getElementById('delete-deck-btn') as HTMLButtonElement;
+			const closeDeckEditorBtn = document.getElementById('close-deck-editor-btn') as HTMLButtonElement;
+			const deckEditorStatus = document.getElementById('deck-editor-status') as HTMLElement;
+			const deckDetailTitle = document.getElementById('deck-detail-title') as HTMLElement;
+			const deckDetailFormat = document.getElementById('deck-detail-format') as HTMLElement;
+			const backToDecksBtnLeft = document.getElementById('back-to-decks-btn-left') as HTMLButtonElement;
+			const deckLayout = document.getElementById('deck-layout') as HTMLElement;
+			const deckAddCardInput = document.getElementById('deck-add-card-input') as HTMLInputElement;
+			const deckSearchPanel = document.getElementById('deck-search-panel') as HTMLDivElement;
+			const deckSearchTitle = document.getElementById('deck-search-title') as HTMLSpanElement;
+			const deckSearchBackBtn = document.getElementById('deck-search-back') as HTMLButtonElement;
+			const deckSearchCloseBtn = document.getElementById('deck-search-close') as HTMLButtonElement;
+			const deckSearchStatus = document.getElementById('deck-search-status') as HTMLDivElement;
+			const deckSearchResults = document.getElementById('deck-search-results') as HTMLDivElement;
+			const deckSections = document.getElementById('deck-sections') as HTMLElement;
+			const deckPreview = document.getElementById('deck-preview') as HTMLImageElement;
+			const commanderPreview = document.getElementById('commander-preview') as HTMLButtonElement;
+			const commanderInspectorBackdrop = document.getElementById('commander-inspector-backdrop') as HTMLDivElement;
+			const commanderInspectorLeft = document.querySelector('.commander-inspector-left') as HTMLDivElement;
+			const commanderInspectorImage = document.getElementById('commander-inspector-image') as HTMLImageElement;
+			const commanderInspectorTitle = document.getElementById('commander-inspector-title') as HTMLDivElement;
+			const commanderInspectorMeta = document.getElementById('commander-inspector-meta') as HTMLDivElement;
+			const commanderInspectorPrice = document.getElementById('commander-inspector-price') as HTMLDivElement;
+			const commanderInspectorErrata = document.getElementById('commander-inspector-errata') as HTMLDivElement;
+			const closeCommanderInspectorBtn = document.getElementById('close-commander-inspector-btn') as HTMLButtonElement;
+			const changeCommanderBtn = document.getElementById('change-commander-btn') as HTMLButtonElement;
+			const commanderInspectorFoilSelect = document.getElementById('commander-inspector-foil') as HTMLSelectElement;
+			const commanderInspectorLangSelect = document.getElementById('commander-inspector-lang') as HTMLSelectElement;
+			const removeCommanderBtn = document.getElementById('remove-commander-btn') as HTMLButtonElement;
+			const proxyToggleBtn = document.getElementById('proxy-toggle-btn') as HTMLButtonElement;
+			const addToCollectionBtn = document.getElementById('add-to-collection-btn') as HTMLButtonElement;
+			const commanderSearchBackdrop = document.getElementById('commander-search-backdrop') as HTMLDivElement;
+			const commanderSearchTitle = document.getElementById('commander-search-title') as HTMLSpanElement;
+			const commanderSearchBackBtn = document.getElementById('commander-search-back') as HTMLButtonElement;
+			const commanderSearchCloseBtn = document.getElementById('commander-search-close') as HTMLButtonElement;
+			const commanderSearchInput = document.getElementById('commander-search-input') as HTMLInputElement;
+			const commanderSearchStatus = document.getElementById('commander-search-status') as HTMLDivElement;
+			const commanderSearchResults = document.getElementById('commander-search-results') as HTMLDivElement;
+			const statCards = document.getElementById('stat-cards') as HTMLElement;
+			const sideboardStat = document.getElementById('sideboard-stat') as HTMLElement;
+			const statSideboard = document.getElementById('stat-sideboard') as HTMLElement;
+			const statAvgMv = document.getElementById('stat-avg-mv') as HTMLElement;
+			const statPrice = document.getElementById('stat-price') as HTMLElement;
+			const statNonlands = document.getElementById('stat-nonlands') as HTMLElement;
+			const deckColors = document.getElementById('deck-colors') as HTMLElement;
+			const deckCurve = document.getElementById('deck-curve') as HTMLElement;
+
+			const metaCache: Record<string, CardMeta> = (() => {
+				try {
+					const raw = localStorage.getItem(META_CACHE_KEY);
+					return raw ? (JSON.parse(raw) as Record<string, CardMeta>) : {};
+				} catch {
+					return {};
+				}
+			})();
+
+			const saveMetaCache = (): void => {
+				localStorage.setItem(META_CACHE_KEY, JSON.stringify(metaCache));
+			};
+
+			const readDeckNames = (): string[] => {
+				try {
+					const raw = localStorage.getItem(DECK_NAMES_KEY);
+					const names = raw ? (JSON.parse(raw) as string[]) : [];
+					if (!Array.isArray(names)) return [];
+					const cleaned = names
+						.map((name) => String(name).trim())
+						.filter((name) => name.length > 0);
+					return Array.from(new Set(cleaned));
+				} catch {
+					return [];
+				}
+			};
+
+			const parseDeckFormat = (value: string | undefined): DeckFormat => {
+				const normalized = (value ?? '').trim().toLowerCase();
+				if (normalized === 'commander') return 'commander';
+				if (normalized === 'standard') return 'standard';
+				if (normalized === 'modern') return 'modern';
+				if (normalized === 'pioneer') return 'pioneer';
+				if (normalized === 'legacy') return 'legacy';
+				if (normalized === 'vintage') return 'vintage';
+				if (normalized === 'pauper') return 'pauper';
+				if (normalized === 'brawl') return 'brawl';
+				return 'custom';
+			};
+
+			const formatLabel = (format: DeckFormat): string => {
+				if (format === 'commander') return 'Commander';
+				if (format === 'standard') return 'Standard';
+				if (format === 'modern') return 'Modern';
+				if (format === 'pioneer') return 'Pioneer';
+				if (format === 'legacy') return 'Legacy';
+				if (format === 'vintage') return 'Vintage';
+				if (format === 'pauper') return 'Pauper';
+				if (format === 'brawl') return 'Brawl';
+				return 'Custom';
+			};
+
+			const readDeckFormats = (): Record<string, DeckFormat> => {
+				try {
+					const raw = localStorage.getItem(DECK_FORMATS_KEY);
+					const parsed = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+					if (!parsed || typeof parsed !== 'object') return {};
+
+					const result: Record<string, DeckFormat> = {};
+					Object.entries(parsed).forEach(([deckName, format]) => {
+						result[deckName] = parseDeckFormat(format);
+					});
+					return result;
+				} catch {
+					return {};
+				}
+			};
+
+			const saveDeckFormats = (map: Record<string, DeckFormat>): void => {
+				localStorage.setItem(DECK_FORMATS_KEY, JSON.stringify(map));
+			};
+
+			const readDeckColors = (): Record<string, string> => {
+				try {
+					const raw = localStorage.getItem(DECK_COLORS_KEY);
+					const parsed = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+					if (!parsed || typeof parsed !== 'object') return {};
+					const result: Record<string, string> = {};
+					Object.entries(parsed).forEach(([deck, color]) => {
+						if (typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color)) {
+							result[deck] = color;
+						}
+					});
+					return result;
+				} catch {
+					return {};
+				}
+			};
+
+			const saveDeckColors = (map: Record<string, string>): void => {
+				localStorage.setItem(DECK_COLORS_KEY, JSON.stringify(map));
+			};
+
+			const readDeckCommanders = (): Record<string, SlotCard> => {
+				try {
+					const raw = localStorage.getItem(DECK_COMMANDERS_KEY);
+					const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+					if (!parsed || typeof parsed !== 'object') return {};
+
+					const result: Record<string, SlotCard> = {};
+					Object.entries(parsed).forEach(([deckName, value]) => {
+						if (!value || typeof value !== 'object') return;
+						const card = value as Partial<SlotCard>;
+						if (!card.id || !card.name || !card.scryfallUri) return;
+						result[deckName] = {
+							id: card.id,
+							name: card.name,
+							imageUrl: card.imageUrl ?? null,
+							imageUrlLarge: card.imageUrlLarge ?? null,
+							scryfallUri: card.scryfallUri,
+							setCode: card.setCode,
+							setName: card.setName,
+							collectorNumber: card.collectorNumber,
+							lang: card.lang,
+							foil: card.foil ?? 'nonfoil'
+						};
+					});
+					return result;
+				} catch {
+					return {};
+				}
+			};
+
+			const saveDeckCommanders = (map: Record<string, SlotCard>): void => {
+				localStorage.setItem(DECK_COMMANDERS_KEY, JSON.stringify(map));
+			};
+
+			const pickCardImageSmall = (card: ScryfallSearchCard): string | null => {
+				if (card.image_uris?.small) return card.image_uris.small;
+				const firstFace = card.card_faces?.find((face) => !!face.image_uris?.small);
+				return firstFace?.image_uris?.small ?? null;
+			};
+
+			const pickCardImageNormal = (card: ScryfallSearchCard): string | null => {
+				if (card.image_uris?.normal) return card.image_uris.normal;
+				const firstFace = card.card_faces?.find((face) => !!face.image_uris?.normal);
+				return firstFace?.image_uris?.normal ?? null;
+			};
+
+			const rowKeyFromCard = (card: SlotCard): string => {
+				return [
+					card.id,
+					card.lang ?? '',
+					card.foil ?? 'nonfoil',
+					card.setCode ?? '',
+					card.collectorNumber ?? ''
+				].join('|');
+			};
+
+			const escapeScryfallRegex = (value: string): string => value.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&');
+
+			const searchCommanderCard = async (query: string): Promise<SlotCard | null> => {
+				const term = query.trim();
+				if (!term) return null;
+				const nameNeedle = term.toLowerCase();
+				const requestCards = async (searchQuery: string): Promise<Response> => {
+					return fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(searchQuery)}&order=released&dir=desc&unique=prints`);
+				};
+
+				let response = await requestCards(`name:/${escapeScryfallRegex(term)}/`);
+				if (!response.ok && response.status !== 404) {
+					response = await requestCards(`name:${term}`);
+				}
+				if (!response.ok) return null;
+
+				const payload = await response.json() as { data?: ScryfallSearchCard[] };
+				const first = (payload.data ?? []).find((card) => (card.name ?? '').toLowerCase().includes(nameNeedle)) ?? payload.data?.[0];
+				if (!first) return null;
+
+				return {
+					id: first.id,
+					name: first.name,
+					imageUrl: pickCardImageSmall(first),
+					imageUrlLarge: pickCardImageNormal(first),
+					scryfallUri: first.scryfall_uri,
+					setCode: first.set,
+					setName: first.set_name,
+					collectorNumber: first.collector_number,
+					lang: first.lang,
+					foil: 'nonfoil'
+				};
+			};
+
+			const saveDeckNames = (names: string[]): void => {
+				const cleaned = Array.from(new Set(names.map((name) => name.trim()).filter((name) => name.length > 0)));
+				localStorage.setItem(DECK_NAMES_KEY, JSON.stringify(cleaned));
+			};
+
+			const readDeckMap = (): Map<string, SlotCard[]> => {
+				try {
+					const raw = localStorage.getItem(DECK_CARD_MAP_KEY);
+					if (!raw) return new Map<string, SlotCard[]>();
+					const parsed = JSON.parse(raw) as Record<string, SlotCard[]>;
+					if (!parsed || typeof parsed !== 'object') return new Map<string, SlotCard[]>();
+
+					const map = new Map<string, SlotCard[]>();
+					Object.entries(parsed).forEach(([deckName, cards]) => {
+						if (!deckName.trim()) return;
+						if (!Array.isArray(cards)) {
+							map.set(deckName, []);
+							return;
+						}
+						const sanitized = cards.filter((card) => {
+							return !!card && typeof card === 'object' && typeof card.id === 'string' && typeof card.name === 'string';
+						});
+						map.set(deckName, sanitized);
+					});
+
+					return map;
+				} catch {
+					return new Map<string, SlotCard[]>();
+				}
+			};
+
+			const saveDeckMap = (): void => {
+				const serializable: Record<string, SlotCard[]> = {};
+				deckMap.forEach((cards, deckName) => {
+					serializable[deckName] = cards;
+				});
+				localStorage.setItem(DECK_CARD_MAP_KEY, JSON.stringify(serializable));
+			};
+
+			let draggedDeckName = '';
+
+			const moveDeckToTarget = (deckName: string, targetDeckName: string): void => {
+				if (!deckName || deckName === targetDeckName) return;
+
+				const names = readDeckNames();
+				const currentIndex = names.indexOf(deckName);
+				const targetIndex = names.indexOf(targetDeckName);
+				if (currentIndex === -1 || targetIndex === -1) return;
+
+				const reordered = [...names];
+				const [movedDeck] = reordered.splice(currentIndex, 1);
+				reordered.splice(targetIndex, 0, movedDeck);
+				saveDeckNames(reordered);
+				renderDeckHome();
+			};
+
+			const fallbackMeta: CardMeta = {
+				cmc: 0,
+				manaCost: '',
+				typeLine: '',
+				colorIdentity: [],
+				priceEur: '',
+				priceEurFoil: '',
+				priceUsd: '',
+				priceUsdFoil: ''
+			};
+
+			const fetchMeta = async (card: SlotCard): Promise<CardMeta> => {
+				if (metaCache[card.id]) return metaCache[card.id];
+
+				try {
+					const response = await fetch(`https://api.scryfall.com/cards/${encodeURIComponent(card.id)}`);
+					if (response.ok) {
+						const data = await response.json() as {
+							cmc?: number;
+							mana_cost?: string;
+							type_line?: string;
+							color_identity?: string[];
+							prices?: {
+								eur?: string | null;
+								eur_foil?: string | null;
+								usd?: string | null;
+								usd_foil?: string | null;
+							};
+						};
+						metaCache[card.id] = {
+							cmc: Number.isFinite(data.cmc) ? Number(data.cmc) : 0,
+							manaCost: data.mana_cost ?? '',
+							typeLine: data.type_line ?? '',
+							colorIdentity: Array.isArray(data.color_identity) ? data.color_identity : [],
+							priceEur: data.prices?.eur ?? '',
+							priceEurFoil: data.prices?.eur_foil ?? '',
+							priceUsd: data.prices?.usd ?? '',
+							priceUsdFoil: data.prices?.usd_foil ?? ''
+						};
+						saveMetaCache();
+						return metaCache[card.id];
+					}
+				} catch {
+					return fallbackMeta;
+				}
+
+				metaCache[card.id] = fallbackMeta;
+				return fallbackMeta;
+			};
+
+			const sectionFromType = (typeLine: string): string => {
+				if (typeLine.includes('Creature')) return 'Creatures';
+				if (typeLine.includes('Instant')) return 'Instants';
+				if (typeLine.includes('Sorcery')) return 'Sorceries';
+				if (typeLine.includes('Enchantment')) return 'Enchantments';
+				if (typeLine.includes('Artifact')) return 'Artifacts';
+				if (typeLine.includes('Planeswalker')) return 'Planeswalkers';
+				if (typeLine.includes('Battle')) return 'Battles';
+				if (typeLine.includes('Land')) return 'Lands';
+				return 'Other';
+			};
+
+			const colorLabel = (symbol: string): string => {
+				if (symbol === 'W') return 'White';
+				if (symbol === 'U') return 'Blue';
+				if (symbol === 'B') return 'Black';
+				if (symbol === 'R') return 'Red';
+				if (symbol === 'G') return 'Green';
+				return symbol;
+			};
+
+			const deckIdentitySymbols = (deckName: string): string[] => {
+				const cards = deckMap.get(deckName) ?? [];
+				const used = new Set<string>();
+
+				cards.forEach((card) => {
+					const colors = metaCache[card.id]?.colorIdentity ?? [];
+					colors.forEach((symbol) => {
+						if (symbol === 'W' || symbol === 'U' || symbol === 'B' || symbol === 'R' || symbol === 'G') {
+							used.add(symbol);
+						}
+					});
+				});
+
+				return ['W', 'U', 'B', 'R', 'G'].filter((symbol) => used.has(symbol));
+			};
+
+			const formatPrice = (meta: CardMeta, foil: SlotCard['foil']): { text: string; numeric: number } => {
+				const isFoil = foil === 'foil' || foil === 'etched';
+				const eur = isFoil ? (meta.priceEurFoil || meta.priceEur) : (meta.priceEur || meta.priceEurFoil);
+				const usd = isFoil ? (meta.priceUsdFoil || meta.priceUsd) : (meta.priceUsd || meta.priceUsdFoil);
+
+				if (eur) return { text: `EUR ${eur}`, numeric: Number.parseFloat(eur) || 0 };
+				if (usd) return { text: `USD ${usd}`, numeric: Number.parseFloat(usd) || 0 };
+				return { text: '-', numeric: 0 };
+			};
+
+			const collectionVariantKey = (card: SlotCard): string => {
+				return [
+					card.id,
+					card.lang ?? '',
+					card.foil ?? 'nonfoil'
+				].join('|');
+			};
+
+			const emptyBinderPage = (): BinderSlotValue[] => Array(BINDER_SLOTS_PER_PAGE).fill(null);
+
+			const readBinders = (): BinderStorage[] => {
+				try {
+					const raw = localStorage.getItem(BINDER_STORAGE_KEY);
+					const parsed = raw ? (JSON.parse(raw) as BinderStorage[]) : [];
+					return Array.isArray(parsed) ? parsed : [];
+				} catch {
+					return [];
+				}
+			};
+
+			const saveBinders = (binders: BinderStorage[]): void => {
+				localStorage.setItem(BINDER_STORAGE_KEY, JSON.stringify(binders));
+			};
+
+			const readCollectionCards = (): SlotCard[] => {
+				try {
+					const raw = localStorage.getItem(COLLECTION_STORAGE_KEY);
+					return raw ? (JSON.parse(raw) as SlotCard[]) : [];
+				} catch {
+					return [];
+				}
+			};
+
+			const saveCollectionCards = (cards: SlotCard[]): void => {
+				localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(cards));
+			};
+
+			const ensureBinderPages = (binder: BinderStorage): BinderSlotValue[][] => {
+				const pages = Array.isArray(binder.pages) ? binder.pages : [];
+				while (pages.length < 2) {
+					pages.push(emptyBinderPage());
+				}
+				for (let idx = 0; idx < pages.length; idx += 1) {
+					if (!Array.isArray(pages[idx])) {
+						pages[idx] = emptyBinderPage();
+						continue;
+					}
+					if (pages[idx].length < BINDER_SLOTS_PER_PAGE) {
+						pages[idx] = [...pages[idx], ...Array(BINDER_SLOTS_PER_PAGE - pages[idx].length).fill(null)];
+					}
+				}
+				binder.pages = pages;
+				return pages;
+			};
+
+			const cloneForCollection = (card: SlotCard, sourceKey: string): SlotCard => {
+				return {
+					id: card.id,
+					name: card.name,
+					imageUrl: card.imageUrl,
+					imageUrlLarge: card.imageUrlLarge,
+					scryfallUri: card.scryfallUri,
+					setCode: card.setCode,
+					setName: card.setName,
+					collectorNumber: card.collectorNumber,
+					lang: card.lang,
+					foil: card.foil ?? 'nonfoil',
+					collectionSource: sourceKey
+				};
+			};
+
+			const addCardToCollection = (card: SlotCard, sourceKey: string): { ok: boolean; message: string } => {
+				const collectionCards = readCollectionCards();
+				const variantKey = collectionVariantKey(card);
+
+				// Check if card variant is already in collection
+				const exists = collectionCards.some((c) => collectionVariantKey(c) === variantKey);
+				if (exists) {
+					return {
+						ok: false,
+						message: `${card.name} is already in your collection.`
+					};
+				}
+
+				const cardToAdd = cloneForCollection(card, sourceKey);
+				collectionCards.push(cardToAdd);
+				saveCollectionCards(collectionCards);
+
+				return {
+					ok: true,
+					message: `Added ${card.name} to collection.`
+				};
+			};
+
+			const isInCollection = (card: SlotCard): boolean => {
+				const variantKey = collectionVariantKey(card);
+				return readCollectionCards().some((entry) => collectionVariantKey(entry) === variantKey);
+			};
+
+			const syncAddToCollectionButton = (card: SlotCard | null): void => {
+				if (!card) {
+					addToCollectionBtn.disabled = true;
+					addToCollectionBtn.textContent = 'Add to Collection';
+					addToCollectionBtn.title = 'Open a card first';
+					return;
+				}
+
+				if (card.proxy) {
+					addToCollectionBtn.disabled = true;
+					addToCollectionBtn.textContent = 'Add to Collection';
+					addToCollectionBtn.title = 'Proxy cards cannot be added to your collection.';
+					return;
+				}
+
+				const alreadyCollected = isInCollection(card);
+				addToCollectionBtn.disabled = alreadyCollected;
+				addToCollectionBtn.textContent = alreadyCollected ? 'In Collection' : 'Add to Collection';
+				addToCollectionBtn.title = alreadyCollected
+					? 'This card variant is already in your collection.'
+					: 'Add this card variant to your collection.';
+			};
+
+			const applyFoilClass = (element: HTMLElement, foil: SlotCard['foil'] | undefined): void => {
+				element.classList.remove('preview-foil', 'preview-etched', 'inspector-foil', 'inspector-etched');
+				if (foil === 'foil') {
+					element.classList.add(element === commanderPreview ? 'preview-foil' : 'inspector-foil');
+				} else if (foil === 'etched') {
+					element.classList.add(element === commanderPreview ? 'preview-etched' : 'inspector-etched');
+				}
+			};
+
+			const applyPreviewFinish = (card: SlotCard | null): void => {
+				applyFoilClass(commanderPreview, card?.foil);
+			};
+
+			const applyInspectorFinish = (card: SlotCard | null): void => {
+				applyFoilClass(commanderInspectorLeft, card?.foil);
+			};
+
+			const escapeHtml = (value: string): string => value
+				.replaceAll('&', '&amp;')
+				.replaceAll('<', '&lt;')
+				.replaceAll('>', '&gt;')
+				.replaceAll('"', '&quot;')
+				.replaceAll("'", '&#39;');
+
+			const manaClassFromSymbol = (symbol: string): string => {
+				const normalized = symbol.trim().toUpperCase().replaceAll(' ', '');
+				if (normalized === 'T') return 'tap';
+				if (normalized === 'Q') return 'untap';
+
+				return symbol
+					.trim()
+					.toLowerCase()
+					.replaceAll('/', '')
+					.replaceAll('½', 'half')
+					.replaceAll('∞', 'infinity')
+					.replaceAll(' ', '');
+			};
+
+			const manaCostToHtml = (manaCost: string): string => {
+				const symbols = Array.from(manaCost.matchAll(/\{([^}]+)\}/g)).map((match) => match[1]);
+				if (symbols.length === 0) return escapeHtml(manaCost);
+
+				return symbols
+					.map((symbol) => {
+						const symbolClass = manaClassFromSymbol(symbol);
+						return `<i class="ms ms-cost ms-${escapeHtml(symbolClass)}" title="${escapeHtml(`{${symbol}}`)}" aria-label="${escapeHtml(`{${symbol}}`)}"></i>`;
+					})
+					.join('');
+			};
+
+			const manaTextToHtml = (value: string): string => {
+				const pattern = /\{([^}]+)\}/g;
+				let html = '';
+				let cursor = 0;
+				let match = pattern.exec(value);
+
+				while (match) {
+					html += escapeHtml(value.slice(cursor, match.index));
+					const symbol = match[1];
+					const symbolClass = manaClassFromSymbol(symbol);
+					html += `<i class="ms ms-cost ms-${escapeHtml(symbolClass)}" title="${escapeHtml(`{${symbol}}`)}" aria-label="${escapeHtml(`{${symbol}}`)}"></i>`;
+					cursor = match.index + match[0].length;
+					match = pattern.exec(value);
+				}
+
+				html += escapeHtml(value.slice(cursor));
+				return html.replaceAll('\n', '<br />');
+			};
+
+			const langToFlag = (langCode: string | undefined): string => {
+				switch (langCode) {
+					case 'en': return '🇺🇸';
+					case 'es': return '🇪🇸';
+					case 'fr': return '🇫🇷';
+					case 'de': return '🇩🇪';
+					case 'it': return '🇮🇹';
+					case 'pt': return '🇧🇷';
+					case 'ja': return '🇯🇵';
+					case 'ko': return '🇰🇷';
+					case 'ru': return '🇷🇺';
+					case 'zhs': return '🇨🇳';
+					case 'zht': return '🇹🇼';
+					default: return '❓';
+				}
+			};
+
+			const buildOracleText = (card: ScryfallOracleCard): string => {
+				if (card.oracle_text?.trim()) {
+					const typeLine = card.type_line?.trim() ? `${card.type_line}\n\n` : '';
+					return `${typeLine}${card.oracle_text.trim()}`;
+				}
+
+				if (card.card_faces && card.card_faces.length > 0) {
+					const parts = card.card_faces
+						.map((face) => {
+							const line = face.type_line?.trim() ? `${face.type_line}\n` : '';
+							const text = face.oracle_text?.trim() ?? '';
+							return `${line}${text}`.trim();
+						})
+						.filter(Boolean);
+					if (parts.length > 0) return parts.join('\n\n//\n\n');
+				}
+
+				return 'No oracle text available.';
+			};
+
+			const normalizeDeckName = (value: string | undefined): string => (value ?? '').trim().toLowerCase();
+
+			const buildRows = async (cards: SlotCard[]): Promise<DeckRow[]> => {
+				const grouped = new Map<string, { count: number; card: SlotCard }>();
+
+				cards.forEach((card) => {
+					const key = [card.id, card.lang ?? '', card.foil ?? 'nonfoil', card.setCode ?? '', card.collectorNumber ?? ''].join('|');
+					const existing = grouped.get(key);
+					if (existing) {
+						existing.count += 1;
+					} else {
+						grouped.set(key, { count: 1, card });
+					}
+				});
+
+				const rows: DeckRow[] = [];
+				for (const entry of grouped.values()) {
+					const key = [
+						entry.card.id,
+						entry.card.lang ?? '',
+						entry.card.foil ?? 'nonfoil',
+						entry.card.setCode ?? '',
+						entry.card.collectorNumber ?? ''
+					].join('|');
+					const meta = await fetchMeta(entry.card);
+					const priceInfo = formatPrice(meta, entry.card.foil);
+					rows.push({
+						key,
+						count: entry.count,
+						card: entry.card,
+						meta,
+						section: sectionFromType(meta.typeLine),
+						price: priceInfo.numeric
+					});
+				}
+
+				return rows;
+			};
+
+			let deckMap = new Map<string, SlotCard[]>();
+			let activeDeckName = '';
+			let activeDeckFormat: DeckFormat = 'custom';
+			let currentRows: DeckRow[] = [];
+			let deckFormatMap = readDeckFormats();
+			let deckColorMap = readDeckColors();
+			let deckCommanderMap = readDeckCommanders();
+			let activeCommanderKey = '';
+			let activeCommanderCard: SlotCard | null = null;
+			let activeCommanderMeta: CardMeta | null = null;
+			let editingDeckName = '';
+			let isCreateMode = false;
+			let renderDeckToken = 0;
+			let commanderSearchToken = 0;
+			let commanderSearchDebounceTimer: number | null = null;
+			let commanderSearchResolve: ((value: SlotCard | null) => void) | null = null;
+			let commanderSearchList: ScryfallSearchCard[] = [];
+			let commanderSearchMode: 'commander' | 'deck-card' = 'commander';
+			let deckSearchToken = 0;
+			let deckSearchDebounceTimer: number | null = null;
+			let deckSearchList: ScryfallSearchCard[] = [];
+			let inspectorOracleToken = 0;
+			const inspectorOracleCache = new Map<string, string>();
+			let inspectorMode: 'commander' | 'deck-row' | null = null;
+			let inspectedDeckRow: DeckRow | null = null;
+
+			const openDeckEditor = (deckName: string): void => {
+				isCreateMode = false;
+				editingDeckName = deckName;
+				deckEditorTitle.textContent = 'Edit Deck';
+				saveDeckBtn.textContent = 'Save';
+				editDeckNameInput.value = deckName;
+				editDeckColorInput.value = deckColorMap[deckName] ?? '#2c3e50';
+				editDeckFormatSelect.value = deckFormatMap[deckName] ?? 'custom';
+				deckColorRow.hidden = false;
+				deleteDeckBtn.hidden = false;
+				deckEditorStatus.textContent = '';
+				deckEditorBackdrop.hidden = false;
+			};
+
+			const openCreateDeckEditor = (): void => {
+				isCreateMode = true;
+				editingDeckName = '';
+				deckEditorTitle.textContent = 'Create Deck';
+				saveDeckBtn.textContent = 'Create Deck';
+				editDeckNameInput.value = '';
+				editDeckColorInput.value = '#2c3e50';
+				editDeckFormatSelect.value = 'commander';
+				deckColorRow.hidden = true;
+				deleteDeckBtn.hidden = true;
+				deckEditorStatus.textContent = '';
+				deckEditorBackdrop.hidden = false;
+			};
+
+			const closeDeckEditor = (): void => {
+				deckEditorBackdrop.hidden = true;
+				editingDeckName = '';
+				isCreateMode = false;
+				deckEditorStatus.textContent = '';
+			};
+
+			const getCardsForDeck = (deckName: string): SlotCard[] => {
+				const source = deckMap.get(deckName) ?? [];
+				return [...source];
+			};
+
+			const renderStats = (rows: DeckRow[]): void => {
+				const commanderIsExternal = !!(activeCommanderCard && !rows.some((row) => row.key === activeCommanderKey));
+				const totalCards = rows.reduce((sum, row) => sum + row.count, 0) + (commanderIsExternal ? 1 : 0);
+				const nonlandRows = rows.filter((row) => !row.meta.typeLine.includes('Land'));
+				const commanderNonlandBonus = commanderIsExternal && activeCommanderMeta && !activeCommanderMeta.typeLine.includes('Land') ? 1 : 0;
+				const nonlandCards = nonlandRows.reduce((sum, row) => sum + row.count, 0) + commanderNonlandBonus;
+				const nonlandCmc = nonlandRows.reduce((sum, row) => sum + row.meta.cmc * row.count, 0);
+				const avgMv = nonlandCards > 0 ? (nonlandCmc / nonlandCards) : 0;
+
+				const commanderPriceBonus = commanderIsExternal && activeCommanderMeta && activeCommanderCard
+					? formatPrice(activeCommanderMeta, activeCommanderCard.foil).numeric
+					: 0;
+				const totalPrice = rows.reduce((sum, row) => sum + row.price * row.count, 0) + commanderPriceBonus;
+
+				if (activeDeckFormat === 'commander') {
+					statCards.textContent = `${totalCards}/100`;
+					sideboardStat.hidden = true;
+				} else {
+					statCards.textContent = String(totalCards);
+					statSideboard.textContent = '0/15';
+					sideboardStat.hidden = false;
+				}
+				statAvgMv.textContent = avgMv.toFixed(2);
+				statNonlands.textContent = String(nonlandCards);
+				statPrice.textContent = `EUR ${totalPrice.toFixed(2)}`;
+
+				const colorTotals = new Map<string, number>();
+				rows.forEach((row) => {
+					const colors = row.meta.colorIdentity;
+					if (colors.length === 0) return;
+					colors.forEach((symbol) => {
+						colorTotals.set(symbol, (colorTotals.get(symbol) ?? 0) + row.count);
+					});
+				});
+
+				deckColors.innerHTML = '';
+				['W', 'U', 'B', 'R', 'G'].forEach((symbol) => {
+					const value = colorTotals.get(symbol) ?? 0;
+					if (value === 0) return;
+					const chip = document.createElement('span');
+					chip.className = `color-chip color-${symbol}`;
+					chip.title = `${colorLabel(symbol)} ${value}`;
+					chip.setAttribute('aria-label', `${colorLabel(symbol)} ${value}`);
+					chip.innerHTML = `<i class="ms ms-${symbol.toLowerCase()} ms-cost" aria-hidden="true"></i>`;
+					deckColors.appendChild(chip);
+				});
+				if (deckColors.children.length === 0) {
+					const chip = document.createElement('span');
+					chip.className = 'color-chip';
+					chip.title = 'Colorless';
+					chip.setAttribute('aria-label', 'Colorless');
+					chip.innerHTML = '<i class="ms ms-c ms-cost" aria-hidden="true"></i>';
+					deckColors.appendChild(chip);
+				}
+
+				const curveBuckets = [0, 0, 0, 0, 0, 0, 0, 0];
+				nonlandRows.forEach((row) => {
+					const index = Math.min(7, Math.max(0, Math.floor(row.meta.cmc)));
+					curveBuckets[index] += row.count;
+				});
+				const maxBucket = Math.max(1, ...curveBuckets);
+
+				deckCurve.innerHTML = '';
+				curveBuckets.forEach((value, index) => {
+					const col = document.createElement('div');
+					col.className = 'curve-col';
+
+					const valueEl = document.createElement('div');
+					valueEl.className = 'curve-num';
+					valueEl.textContent = String(value);
+
+					const bar = document.createElement('div');
+					bar.className = 'curve-bar';
+					bar.style.height = `${Math.max(2, Math.round((value / maxBucket) * 90))}px`;
+
+					const label = document.createElement('div');
+					label.className = 'curve-num';
+					label.textContent = index === 7 ? '7+' : String(index);
+
+					col.append(valueEl, bar, label);
+					deckCurve.appendChild(col);
+				});
+			};
+
+			const renderDeckRow = (row: DeckRow, quantityOverride?: number): HTMLButtonElement => {
+				const imageUrl = row.card.imageUrlLarge || row.card.imageUrl || '/favicon.svg';
+				const manaCost = row.meta.manaCost || '';
+				const manaCostHtml = manaCostToHtml(manaCost);
+				const manaValue = Number.isFinite(row.meta.cmc) ? row.meta.cmc : 0;
+				const rowEl = document.createElement('button');
+				rowEl.type = 'button';
+				rowEl.className = 'deck-row' + (row.card.proxy ? ' is-proxy' : '');
+				rowEl.title = row.card.name;
+				rowEl.innerHTML = `
+					<div class="deck-row-qty">${quantityOverride ?? row.count}</div>
+					<div class="deck-row-name">${escapeHtml(row.card.name)}${row.card.proxy ? ' <span class="deck-row-proxy-badge">P</span>' : ''}</div>
+					<div class="deck-row-cost">${manaCostHtml}</div>
+				`;
+				const nameEl = rowEl.querySelector('.deck-row-name') as HTMLDivElement | null;
+				if (nameEl) {
+					nameEl.addEventListener('mouseenter', () => {
+						deckPreview.src = imageUrl;
+						deckPreview.alt = row.card.name;
+						applyPreviewFinish(row.card);
+					});
+				}
+				if (!activeCommanderCard) {
+					rowEl.addEventListener('mouseenter', () => {
+						deckPreview.src = imageUrl;
+						deckPreview.alt = row.card.name;
+						applyPreviewFinish(row.card);
+					});
+				}
+				rowEl.addEventListener('click', () => {
+					void openDeckRowInspector(row);
+				});
+				return rowEl;
+			};
+
+			const syncCommanderPreviewState = (): void => {
+				const isInteractive = activeDeckFormat === 'commander';
+				const hasCommander = Boolean(activeCommanderCard);
+				commanderPreview.disabled = !isInteractive;
+				commanderPreview.classList.toggle('is-static', !isInteractive);
+				commanderPreview.setAttribute('aria-label', hasCommander ? 'Open commander details' : 'Add commander');
+				if (!hasCommander) {
+					commanderInspectorBackdrop.hidden = true;
+				}
+			};
+
+			const closeCommanderInspector = (): void => {
+				inspectorMode = null;
+				inspectedDeckRow = null;
+				commanderInspectorBackdrop.hidden = true;
+			};
+
+			const getInspectedCard = (): SlotCard | null => {
+				if (inspectorMode === 'commander') return activeCommanderCard;
+				if (inspectorMode === 'deck-row') return inspectedDeckRow?.card ?? null;
+				return null;
+			};
+
+			const getInspectedMeta = (): CardMeta | null => {
+				if (inspectorMode === 'commander') return activeCommanderMeta;
+				if (inspectorMode === 'deck-row') return inspectedDeckRow?.meta ?? null;
+				return null;
+			};
+
+			const getInspectedCollectionSource = (): string | null => {
+				const deckSource = activeDeckName.trim();
+				if (!deckSource) return null;
+				if (inspectorMode === 'commander' || inspectorMode === 'deck-row') {
+					return `deck:${deckSource.toLowerCase()}`;
+				}
+				return null;
+			};
+
+			const loadInspectorOracleText = async (cardId: string): Promise<void> => {
+				const token = ++inspectorOracleToken;
+
+				const applyIfCurrent = (text: string): void => {
+					const current = getInspectedCard();
+					if (!current || current.id !== cardId || token !== inspectorOracleToken) return;
+					commanderInspectorErrata.innerHTML = manaTextToHtml(text);
+				};
+
+				const cached = inspectorOracleCache.get(cardId);
+				if (cached) {
+					applyIfCurrent(cached);
+					return;
+				}
+
+				try {
+					const response = await fetch(`https://api.scryfall.com/cards/${encodeURIComponent(cardId)}`);
+					if (!response.ok) {
+						applyIfCurrent(`Failed to load oracle text (HTTP ${response.status}).`);
+						return;
+					}
+
+					const payload = await response.json() as ScryfallOracleCard;
+					const text = buildOracleText(payload);
+					inspectorOracleCache.set(cardId, text);
+					applyIfCurrent(text);
+				} catch {
+					applyIfCurrent('Network error while loading oracle text.');
+				}
+			};
+
+			const renderCommanderInspector = (): void => {
+				const card = getInspectedCard();
+				const meta = getInspectedMeta();
+				if (!card) return;
+
+				const image = card.imageUrlLarge || card.imageUrl || '/favicon.svg';
+				const langFlag = langToFlag(card.lang);
+				const metaParts = [
+					card.setName,
+					card.collectorNumber ? `#${card.collectorNumber}` : '',
+					langFlag,
+					card.foil === 'foil' ? 'Foil' : card.foil === 'etched' ? 'Etched' : 'Nonfoil'
+				].filter((part) => Boolean(part));
+
+				commanderInspectorImage.src = image;
+				commanderInspectorImage.alt = card.name;
+				applyInspectorFinish(card);
+				commanderInspectorTitle.textContent = card.name;
+				commanderInspectorMeta.textContent = metaParts.join(' · ');
+				commanderInspectorPrice.textContent = meta ? formatPrice(meta, card.foil).text : '-';
+				commanderInspectorErrata.textContent = 'Loading oracle text...';
+				void loadInspectorOracleText(card.id);
+				changeCommanderBtn.textContent = 'Select Version';
+				removeCommanderBtn.textContent = inspectorMode === 'commander' ? 'Remove Commander' : 'Remove';
+				commanderInspectorFoilSelect.value = card.foil ?? 'nonfoil';
+				commanderInspectorLangSelect.value = card.lang ?? 'en';
+				proxyToggleBtn.classList.toggle('is-proxy', card.proxy === true);
+				proxyToggleBtn.textContent = card.proxy ? 'Proxy ✓' : 'Proxy';
+				syncAddToCollectionButton(card);
+			};
+
+			const openCommanderInspector = (): void => {
+				inspectorMode = 'commander';
+				inspectedDeckRow = null;
+				if (!activeCommanderCard) return;
+				renderCommanderInspector();
+				commanderInspectorBackdrop.hidden = false;
+			};
+
+			const openDeckRowInspector = async (row: DeckRow): Promise<void> => {
+				inspectorMode = 'deck-row';
+				inspectedDeckRow = row;
+				renderCommanderInspector();
+				commanderInspectorBackdrop.hidden = false;
+			};
+
+			const refreshDeckRowInspector = (): void => {
+				if (inspectorMode !== 'deck-row' || !inspectedDeckRow) return;
+				const nextRow = currentRows.find((row) => row.key === inspectedDeckRow?.key);
+				if (!nextRow) {
+					closeCommanderInspector();
+					return;
+				}
+				inspectedDeckRow = nextRow;
+				renderCommanderInspector();
+			};
+
+			const removeInspectedDeckRow = async (): Promise<void> => {
+				if (!activeDeckName || !inspectedDeckRow) return;
+				const rowKey = inspectedDeckRow.key;
+				const cards = (deckMap.get(activeDeckName) ?? []).filter((card) => rowKeyFromCard(card) !== rowKey);
+				deckMap.set(activeDeckName, cards);
+				saveDeckMap();
+				closeCommanderInspector();
+				await renderDeck();
+			};
+
+			const updateInspectedCard = async (updates: Partial<SlotCard>): Promise<void> => {
+				if (!activeDeckName) return;
+
+				if (inspectorMode === 'commander' && activeCommanderCard) {
+					const nextCommander = { ...activeCommanderCard, ...updates };
+					await setCommander(nextCommander);
+					renderCommanderInspector();
+					return;
+				}
+
+				if (inspectorMode === 'deck-row' && inspectedDeckRow) {
+					const previousRow = inspectedDeckRow;
+					const updatedKey = rowKeyFromCard({ ...previousRow.card, ...updates });
+					const cards = [...(deckMap.get(activeDeckName) ?? [])];
+					let changed = false;
+					const nextCards = cards.map((card) => {
+						if (rowKeyFromCard(card) !== previousRow.key) return card;
+						changed = true;
+						return { ...card, ...updates };
+					});
+
+					if (!changed) return;
+
+					deckMap.set(activeDeckName, nextCards);
+					saveDeckMap();
+					await renderDeck();
+					const nextRow = currentRows.find((row) => row.key === updatedKey);
+					if (!nextRow) {
+						closeCommanderInspector();
+						return;
+					}
+					inspectedDeckRow = nextRow;
+					renderCommanderInspector();
+				}
+			};
+
+			const commanderSearchBaseTitle = (): string => {
+				return commanderSearchMode === 'deck-card' ? 'Search Cards' : 'Search Commander';
+			};
+
+			const asSlotCard = (card: ScryfallSearchCard): SlotCard => {
+				return {
+					id: card.id,
+					name: card.name,
+					imageUrl: pickCardImageSmall(card),
+					imageUrlLarge: pickCardImageNormal(card),
+					scryfallUri: card.scryfall_uri,
+					setCode: card.set,
+					setName: card.set_name,
+					collectorNumber: card.collector_number,
+					lang: card.lang,
+					foil: 'nonfoil'
+				};
+			};
+
+			const resolveCommanderSearch = (selected: SlotCard | null): void => {
+				if (!commanderSearchResolve) return;
+				const resolve = commanderSearchResolve;
+				commanderSearchResolve = null;
+				resolve(selected);
+			};
+
+			const closeCommanderSearchModal = (selected: SlotCard | null = null): void => {
+				if (commanderSearchDebounceTimer !== null) {
+					window.clearTimeout(commanderSearchDebounceTimer);
+					commanderSearchDebounceTimer = null;
+				}
+				commanderSearchBackdrop.hidden = true;
+				commanderSearchTitle.textContent = commanderSearchBaseTitle();
+				commanderSearchBackBtn.hidden = true;
+				commanderSearchInput.hidden = false;
+				commanderSearchInput.disabled = false;
+				commanderSearchInput.value = '';
+				commanderSearchStatus.textContent = 'Type at least 2 characters to search.';
+				commanderSearchResults.innerHTML = '';
+				commanderSearchList = [];
+				resolveCommanderSearch(selected);
+			};
+
+			const openCommanderVersionDialog = (cardName: string): Promise<SlotCard | null> => {
+				closeCommanderInspector();
+				commanderSearchBackdrop.hidden = false;
+				commanderSearchTitle.textContent = `Select Version: ${cardName}`;
+				commanderSearchBackBtn.hidden = true;
+				commanderSearchInput.hidden = true;
+				commanderSearchInput.disabled = true;
+				commanderSearchInput.value = '';
+				commanderSearchResults.innerHTML = '';
+				commanderSearchList = [];
+				commanderSearchStatus.textContent = `Loading printings for ${cardName}...`;
+
+				const printsUrl = `https://api.scryfall.com/cards/search?q=${encodeURIComponent('!"' + cardName + '"')}&unique=prints&order=released&dir=desc`;
+
+				void fetch(printsUrl, {
+					headers: {
+						'Accept': 'application/json;q=0.9,*/*;q=0.8'
+					}
+				})
+					.then(async (response) => {
+						if (!response.ok) {
+							commanderSearchStatus.textContent = `Failed to load versions (HTTP ${response.status}).`;
+							commanderSearchResults.innerHTML = '';
+							return;
+						}
+						const payload = await response.json() as { data?: ScryfallSearchCard[] };
+						const versions = (payload.data ?? [])
+							.filter((item) => !item.digital)
+							.filter((item) => Boolean(pickCardImageSmall(item)))
+							.slice(0, 60);
+
+						commanderSearchStatus.textContent = versions.length > 0
+							? `Select printing for ${cardName}`
+							: `No printable versions found for ${cardName}.`;
+						renderCommanderVersionCards(versions);
+					})
+					.catch(() => {
+						commanderSearchStatus.textContent = `Network error while loading versions for ${cardName}.`;
+						commanderSearchResults.innerHTML = '';
+					});
+
+				return new Promise((resolve) => {
+					commanderSearchResolve = resolve;
+				});
+			};
+
+			const closeDeckSearchPanel = (): void => {
+				if (deckSearchDebounceTimer !== null) {
+					window.clearTimeout(deckSearchDebounceTimer);
+					deckSearchDebounceTimer = null;
+				}
+				deckSearchPanel.hidden = true;
+				deckSearchTitle.textContent = 'Search Cards';
+				deckSearchBackBtn.hidden = true;
+				deckSearchStatus.textContent = 'Type at least 2 characters to search.';
+				deckSearchResults.innerHTML = '';
+				deckSearchList = [];
+			};
+
+			const renderDeckSearchCards = (cards: ScryfallSearchCard[]): void => {
+				deckSearchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'commander-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = card.name;
+					img.loading = 'lazy';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'commander-result-name';
+					name.textContent = card.name;
+
+					const setLine = document.createElement('div');
+					setLine.className = 'commander-result-sub';
+					const setCode = (card.set ?? '').toUpperCase();
+					const collector = card.collector_number ?? '?';
+					setLine.textContent = `${card.set_name ?? 'Unknown Set'} (${setCode}) #${collector}`;
+
+					textWrap.append(name, setLine);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', () => {
+						void openDeckVersionPicker(card);
+					});
+					deckSearchResults.appendChild(button);
+				});
+			};
+
+			const renderDeckVersionCards = (cards: ScryfallSearchCard[]): void => {
+				deckSearchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'commander-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = card.name;
+					img.loading = 'lazy';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'commander-result-name';
+					name.textContent = card.name;
+
+					const setLine = document.createElement('div');
+					setLine.className = 'commander-result-sub';
+					const setCode = (card.set ?? '').toUpperCase();
+					const collector = card.collector_number ?? '?';
+					const langFlag = langToFlag(card.lang ?? 'en');
+					setLine.textContent = `${card.set_name ?? 'Unknown Set'} (${setCode}) #${collector} · ${langFlag}`;
+
+					textWrap.append(name, setLine);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', async () => {
+						await addCardToActiveDeck(asSlotCard(card));
+						deckAddCardInput.value = '';
+						closeDeckSearchPanel();
+					});
+					deckSearchResults.appendChild(button);
+				});
+			};
+
+			const openDeckVersionPicker = async (card: ScryfallSearchCard): Promise<void> => {
+				deckSearchTitle.textContent = `Select Version: ${card.name}`;
+				deckSearchBackBtn.hidden = false;
+				deckSearchStatus.textContent = `Loading printings for ${card.name}...`;
+				deckSearchResults.innerHTML = '';
+
+				const printsUrl = card.prints_search_uri
+					? `${card.prints_search_uri}${card.prints_search_uri.includes('?') ? '&' : '?'}order=released&dir=desc`
+					: `https://api.scryfall.com/cards/search?q=${encodeURIComponent('!"' + card.name + '"')}&unique=prints&order=released&dir=desc`;
+
+				try {
+					const response = await fetch(printsUrl, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (!response.ok) {
+						deckSearchStatus.textContent = `Failed to load versions (HTTP ${response.status}).`;
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallSearchCard[] };
+					const versions = (payload.data ?? [])
+						.filter((item) => !item.digital)
+						.filter((item) => Boolean(pickCardImageSmall(item)))
+						.slice(0, 60);
+
+					deckSearchStatus.textContent = versions.length > 0
+						? `Select printing for ${card.name}`
+						: `No printable versions found for ${card.name}.`;
+
+					renderDeckVersionCards(versions);
+				} catch {
+					deckSearchStatus.textContent = `Network error while loading versions for ${card.name}.`;
+				}
+			};
+
+			const restoreDeckSearchList = (): void => {
+				deckSearchTitle.textContent = 'Search Cards';
+				deckSearchBackBtn.hidden = true;
+				if (deckSearchList.length > 0) {
+					deckSearchStatus.textContent = `Found ${deckSearchList.length} result${deckSearchList.length === 1 ? '' : 's'}. Click one to choose version.`;
+					renderDeckSearchCards(deckSearchList);
+				} else {
+					deckSearchStatus.textContent = 'Type at least 2 characters to search.';
+					deckSearchResults.innerHTML = '';
+				}
+			};
+
+			const searchDeckCardList = async (query: string): Promise<void> => {
+				const trimmed = query.trim();
+				if (trimmed.length < 2) {
+					deckSearchStatus.textContent = 'Type at least 2 characters to search.';
+					deckSearchResults.innerHTML = '';
+					deckSearchList = [];
+					return;
+				}
+
+				const currentToken = ++deckSearchToken;
+				deckSearchStatus.textContent = 'Searching Scryfall...';
+
+				try {
+					const queryValue = `name:/${escapeScryfallRegex(trimmed)}/`;
+					const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(queryValue)}&unique=cards&order=name`, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (currentToken !== deckSearchToken) return;
+
+					if (!response.ok) {
+						if (response.status === 404) {
+							deckSearchStatus.textContent = 'No cards found.';
+							deckSearchResults.innerHTML = '';
+							deckSearchList = [];
+							return;
+						}
+						deckSearchStatus.textContent = `Search failed (HTTP ${response.status}).`;
+						deckSearchResults.innerHTML = '';
+						deckSearchList = [];
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallSearchCard[] };
+					const needle = trimmed.toLowerCase();
+					const cards = (payload.data ?? [])
+						.filter((card) => (card.name ?? '').toLowerCase().includes(needle))
+						.filter((card) => !card.digital)
+						.filter((card) => Boolean(pickCardImageSmall(card)))
+						.slice(0, 24);
+
+					deckSearchList = cards;
+					deckSearchTitle.textContent = 'Search Cards';
+					deckSearchBackBtn.hidden = true;
+					deckSearchStatus.textContent = cards.length > 0
+						? `Found ${cards.length} result${cards.length === 1 ? '' : 's'}. Click one to choose version.`
+						: 'No cards found.';
+					renderDeckSearchCards(cards);
+				} catch {
+					if (currentToken !== deckSearchToken) return;
+					deckSearchList = [];
+					deckSearchStatus.textContent = 'Network error while searching Scryfall.';
+					deckSearchResults.innerHTML = '';
+				}
+			};
+
+			const openDeckSearchPanel = (initialValue = ''): void => {
+				deckSearchPanel.hidden = false;
+				deckSearchTitle.textContent = 'Search Cards';
+				deckSearchBackBtn.hidden = true;
+				deckSearchResults.innerHTML = '';
+				deckSearchList = [];
+				const trimmed = initialValue.trim();
+				deckSearchStatus.textContent = trimmed.length >= 2 ? 'Searching Scryfall...' : 'Type at least 2 characters to search.';
+			};
+
+			const renderCommanderSearchCards = (cards: ScryfallSearchCard[]): void => {
+				commanderSearchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'commander-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = card.name;
+					img.loading = 'lazy';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'commander-result-name';
+					name.textContent = card.name;
+
+					const setLine = document.createElement('div');
+					setLine.className = 'commander-result-sub';
+					const setCode = (card.set ?? '').toUpperCase();
+					const collector = card.collector_number ?? '?';
+					setLine.textContent = `${card.set_name ?? 'Unknown Set'} (${setCode}) #${collector}`;
+
+					textWrap.append(name, setLine);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', () => {
+						void openCommanderVersionPicker(card);
+					});
+					commanderSearchResults.appendChild(button);
+				});
+			};
+
+			const renderCommanderVersionCards = (cards: ScryfallSearchCard[]): void => {
+				commanderSearchResults.innerHTML = '';
+				cards.forEach((card) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'commander-result';
+
+					const img = document.createElement('img');
+					img.src = pickCardImageSmall(card) ?? '/favicon.svg';
+					img.alt = card.name;
+					img.loading = 'eager';
+
+					const textWrap = document.createElement('div');
+					const name = document.createElement('div');
+					name.className = 'commander-result-name';
+					name.textContent = card.name;
+
+					const setLine = document.createElement('div');
+					setLine.className = 'commander-result-sub';
+					const setCode = (card.set ?? '').toUpperCase();
+					const collector = card.collector_number ?? '?';
+					const langFlag = langToFlag(card.lang ?? 'en');
+					setLine.textContent = `${card.set_name ?? 'Unknown Set'} (${setCode}) #${collector} · ${langFlag}`;
+
+					textWrap.append(name, setLine);
+					button.append(img, textWrap);
+
+					button.addEventListener('click', () => {
+						closeCommanderSearchModal(asSlotCard(card));
+					});
+					commanderSearchResults.appendChild(button);
+				});
+			};
+
+			const openCommanderVersionPicker = async (card: ScryfallSearchCard): Promise<void> => {
+				commanderSearchTitle.textContent = `Select Version: ${card.name}`;
+				commanderSearchBackBtn.hidden = false;
+				commanderSearchInput.disabled = true;
+				commanderSearchStatus.textContent = `Loading printings for ${card.name}...`;
+				commanderSearchResults.innerHTML = '';
+
+				const printsUrl = card.prints_search_uri
+					? `${card.prints_search_uri}${card.prints_search_uri.includes('?') ? '&' : '?'}order=released&dir=desc`
+					: `https://api.scryfall.com/cards/search?q=${encodeURIComponent('!"' + card.name + '"')}&unique=prints&order=released&dir=desc`;
+
+				try {
+					const response = await fetch(printsUrl, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (!response.ok) {
+						commanderSearchStatus.textContent = `Failed to load versions (HTTP ${response.status}).`;
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallSearchCard[] };
+					const versions = (payload.data ?? [])
+						.filter((item) => !item.digital)
+						.filter((item) => Boolean(pickCardImageSmall(item)))
+						.slice(0, 60);
+
+					commanderSearchStatus.textContent = versions.length > 0
+						? `Select printing for ${card.name}`
+						: `No printable versions found for ${card.name}.`;
+
+					renderCommanderVersionCards(versions);
+				} catch {
+					commanderSearchStatus.textContent = `Network error while loading versions for ${card.name}.`;
+				}
+			};
+
+			const restoreCommanderSearchList = (): void => {
+				commanderSearchTitle.textContent = commanderSearchBaseTitle();
+				commanderSearchBackBtn.hidden = true;
+				commanderSearchInput.disabled = false;
+				commanderSearchInput.focus();
+				if (commanderSearchList.length > 0) {
+					commanderSearchStatus.textContent = `Found ${commanderSearchList.length} result${commanderSearchList.length === 1 ? '' : 's'}. Click one to choose version.`;
+					renderCommanderSearchCards(commanderSearchList);
+				} else {
+					commanderSearchStatus.textContent = 'Type at least 2 characters to search.';
+					commanderSearchResults.innerHTML = '';
+				}
+			};
+
+			const searchCommanderList = async (query: string): Promise<void> => {
+				const trimmed = query.trim();
+				if (trimmed.length < 2) {
+					commanderSearchStatus.textContent = 'Type at least 2 characters to search.';
+					commanderSearchResults.innerHTML = '';
+					commanderSearchList = [];
+					return;
+				}
+
+				const currentToken = ++commanderSearchToken;
+				commanderSearchStatus.textContent = 'Searching Scryfall...';
+
+				try {
+					const queryValue = `name:/${escapeScryfallRegex(trimmed)}/`;
+					const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(queryValue)}&unique=cards&order=name`, {
+						headers: {
+							'Accept': 'application/json;q=0.9,*/*;q=0.8'
+						}
+					});
+
+					if (currentToken !== commanderSearchToken) return;
+
+					if (!response.ok) {
+						if (response.status === 404) {
+							commanderSearchStatus.textContent = 'No cards found.';
+							commanderSearchResults.innerHTML = '';
+							commanderSearchList = [];
+							return;
+						}
+						commanderSearchStatus.textContent = `Search failed (HTTP ${response.status}).`;
+						commanderSearchResults.innerHTML = '';
+						commanderSearchList = [];
+						return;
+					}
+
+					const payload = await response.json() as { data?: ScryfallSearchCard[] };
+					const needle = trimmed.toLowerCase();
+					const cards = (payload.data ?? [])
+						.filter((card) => (card.name ?? '').toLowerCase().includes(needle))
+						.filter((card) => !card.digital)
+						.filter((card) => Boolean(pickCardImageSmall(card)))
+						.slice(0, 24);
+
+					commanderSearchList = cards;
+					commanderSearchTitle.textContent = 'Search Commander';
+					commanderSearchBackBtn.hidden = true;
+					commanderSearchInput.disabled = false;
+					commanderSearchStatus.textContent = cards.length > 0
+						? `Found ${cards.length} result${cards.length === 1 ? '' : 's'}. Click one to choose version.`
+						: 'No cards found.';
+					renderCommanderSearchCards(cards);
+				} catch {
+					if (currentToken !== commanderSearchToken) return;
+					commanderSearchList = [];
+					commanderSearchStatus.textContent = 'Network error while searching Scryfall.';
+					commanderSearchResults.innerHTML = '';
+				}
+			};
+
+			const openCommanderSearchDialog = (initialValue = '', mode: 'commander' | 'deck-card' = 'commander'): Promise<SlotCard | null> => {
+				closeCommanderInspector();
+				commanderSearchMode = mode;
+				commanderSearchBackdrop.hidden = false;
+				commanderSearchTitle.textContent = commanderSearchBaseTitle();
+				commanderSearchBackBtn.hidden = true;
+				commanderSearchInput.disabled = false;
+				commanderSearchInput.value = initialValue;
+				commanderSearchResults.innerHTML = '';
+				commanderSearchList = [];
+
+				const trimmed = initialValue.trim();
+				if (trimmed.length >= 2) {
+					void searchCommanderList(trimmed);
+				} else {
+					commanderSearchStatus.textContent = 'Type at least 2 characters to search.';
+				}
+
+				window.setTimeout(() => commanderSearchInput.focus(), 0);
+
+				return new Promise((resolve) => {
+					commanderSearchResolve = resolve;
+				});
+			};
+
+			const addCardToActiveDeck = async (selected: SlotCard): Promise<void> => {
+				if (!activeDeckName) return;
+
+				const cards = [...(deckMap.get(activeDeckName) ?? [])];
+				cards.push({
+					...selected,
+					deckName: activeDeckName,
+					inDeck: true
+				});
+
+				deckMap.set(activeDeckName, cards);
+				saveDeckMap();
+				await renderDeck();
+			};
+
+			const setCommander = async (selected: SlotCard): Promise<void> => {
+				if (!activeDeckName) return;
+				deckCommanderMap[activeDeckName] = selected;
+				saveDeckCommanders(deckCommanderMap);
+				activeCommanderCard = selected;
+				activeCommanderMeta = await fetchMeta(selected);
+				activeCommanderKey = rowKeyFromCard(selected);
+				deckPreview.src = selected.imageUrlLarge || selected.imageUrl || '/favicon.svg';
+				deckPreview.alt = selected.name;
+				applyPreviewFinish(selected);
+				renderCommanderInspector();
+				renderRows();
+			};
+
+			const clearCommander = (): void => {
+				if (!activeDeckName) return;
+				delete deckCommanderMap[activeDeckName];
+				saveDeckCommanders(deckCommanderMap);
+				activeCommanderCard = null;
+				activeCommanderMeta = null;
+				activeCommanderKey = '';
+				closeCommanderInspector();
+				if (currentRows[0]) {
+					deckPreview.src = currentRows[0].card.imageUrlLarge || currentRows[0].card.imageUrl || '/favicon.svg';
+					deckPreview.alt = currentRows[0].card.name;
+					applyPreviewFinish(currentRows[0].card);
+				} else {
+					deckPreview.src = '/favicon.svg';
+					deckPreview.alt = 'Card preview';
+					applyPreviewFinish(null);
+				}
+				renderRows();
+			};
+
+			const renderRows = (): void => {
+				const sorted = [...currentRows];
+				const commanderRow = activeCommanderKey ? (currentRows.find((row) => row.key === activeCommanderKey) ?? null) : null;
+				const commanderDisplayRow = activeCommanderCard
+					? (
+						commanderRow
+							? { ...commanderRow, count: 1, section: 'Commander' }
+							: (activeCommanderMeta
+								? {
+									key: activeCommanderKey,
+									count: 1,
+									card: activeCommanderCard,
+									meta: activeCommanderMeta,
+									section: 'Commander',
+									price: formatPrice(activeCommanderMeta, activeCommanderCard.foil).numeric
+								}
+								: null)
+					)
+					: null;
+
+				deckSections.innerHTML = '';
+				const sectionOrder = ['Creatures', 'Instants', 'Sorceries', 'Enchantments', 'Artifacts', 'Planeswalkers', 'Battles', 'Lands', 'Other'];
+				const grouped = new Map<string, DeckRow[]>();
+				sectionOrder.forEach((name) => grouped.set(name, []));
+				sorted.forEach((row) => {
+					if (commanderRow && row.key === commanderRow.key) return;
+					const section = grouped.get(row.section) ?? grouped.get('Other');
+					if (section) section.push(row);
+				});
+
+				let shownCards = 0;
+
+				if (commanderDisplayRow) {
+					const section = document.createElement('section');
+					section.className = 'deck-section';
+
+					const head = document.createElement('div');
+					head.className = 'deck-section-head';
+					head.innerHTML = `<span class="deck-section-name">Commander</span><span class="deck-section-count">1</span>`;
+					section.appendChild(head);
+
+					const cardGrid = document.createElement('div');
+					cardGrid.className = 'deck-card-grid';
+					cardGrid.appendChild(renderDeckRow(commanderDisplayRow, 1));
+					section.appendChild(cardGrid);
+
+					deckSections.appendChild(section);
+					shownCards += 1;
+				}
+
+				sectionOrder.forEach((sectionName) => {
+					const rows = grouped.get(sectionName) ?? [];
+					if (rows.length === 0) return;
+
+					const total = rows.reduce((sum, row) => sum + row.count, 0);
+					shownCards += total;
+
+					const section = document.createElement('section');
+					section.className = 'deck-section';
+
+					const head = document.createElement('div');
+					head.className = 'deck-section-head';
+					head.innerHTML = `<span class="deck-section-name">${escapeHtml(sectionName)}</span><span class="deck-section-count">${total}</span>`;
+					section.appendChild(head);
+
+					const cardGrid = document.createElement('div');
+					cardGrid.className = 'deck-card-grid';
+
+					rows.forEach((row) => {
+						cardGrid.appendChild(renderDeckRow(row));
+					});
+					section.appendChild(cardGrid);
+
+					deckSections.appendChild(section);
+				});
+
+				if (shownCards === 0) {
+					deckSections.innerHTML = '';
+				}
+
+				renderStats(currentRows);
+				refreshDeckRowInspector();
+
+
+				syncCommanderPreviewState();
+			};
+
+			const renderDeck = async (): Promise<void> => {
+				const token = ++renderDeckToken;
+				const targetDeck = activeDeckName;
+				const cards = getCardsForDeck(targetDeck);
+				deckDetailTitle.textContent = activeDeckName || 'Deck';
+				closeDeckSearchPanel();
+				activeDeckFormat = deckFormatMap[activeDeckName] ?? 'custom';
+				deckDetailFormat.textContent = formatLabel(activeDeckFormat);
+				activeCommanderCard = deckCommanderMap[activeDeckName] ?? null;
+				activeCommanderMeta = activeCommanderCard ? await fetchMeta(activeCommanderCard) : null;
+				activeCommanderKey = activeCommanderCard ? rowKeyFromCard(activeCommanderCard) : '';
+				syncCommanderPreviewState();
+				currentRows = [];
+
+				if (cards.length === 0) {
+					currentRows = [];
+					if (activeCommanderCard && activeCommanderMeta) {
+						deckLayout.hidden = false;
+						deckPreview.src = activeCommanderCard.imageUrlLarge || activeCommanderCard.imageUrl || '/favicon.svg';
+						deckPreview.alt = activeCommanderCard.name;
+						applyPreviewFinish(activeCommanderCard);
+						renderRows();
+						return;
+					}
+
+					deckLayout.hidden = false;
+					deckPreview.src = '/favicon.svg';
+					deckPreview.alt = 'Card preview';
+					applyPreviewFinish(null);
+					renderRows();
+					return;
+				}
+
+				deckLayout.hidden = false;
+
+				const builtRows = await buildRows(cards);
+				if (token !== renderDeckToken || targetDeck !== activeDeckName) {
+					return;
+				}
+				currentRows = builtRows;
+				if (activeCommanderCard) {
+					deckPreview.src = activeCommanderCard.imageUrlLarge || activeCommanderCard.imageUrl || '/favicon.svg';
+					deckPreview.alt = activeCommanderCard.name;
+					applyPreviewFinish(activeCommanderCard);
+				} else {
+					const first = currentRows[0];
+					if (first) {
+						deckPreview.src = first.card.imageUrlLarge || first.card.imageUrl || '/favicon.svg';
+						deckPreview.alt = first.card.name;
+						applyPreviewFinish(first.card);
+					} else {
+						applyPreviewFinish(null);
+					}
+				}
+
+				renderRows();
+			};
+
+			const renderDeckHome = (): void => {
+				const names = readDeckNames().filter((name) => deckMap.has(name));
+				const existingCards = Array.from(deckGrid.querySelectorAll('.deck-card.select-deck-card'));
+				existingCards.forEach((card) => card.remove());
+
+				names.forEach((name, index) => {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'deck-card select-deck-card';
+					button.style.background = deckColorMap[name] ?? '#2c3e50';
+					button.dataset.deckName = name;
+
+					if ((window as any).mtgIsAuthed) {
+						button.draggable = true;
+						button.addEventListener('dragstart', (event) => {
+						draggedDeckName = name;
+						button.classList.add('is-dragging');
+						if (event.dataTransfer) {
+							event.dataTransfer.effectAllowed = 'move';
+							event.dataTransfer.setData('text/plain', name);
+						}
+					});
+					button.addEventListener('dragend', () => {
+						draggedDeckName = '';
+						button.classList.remove('is-dragging');
+						button.classList.remove('is-drop-target');
+					});
+					button.addEventListener('dragover', (event) => {
+						if (!draggedDeckName || draggedDeckName === name) return;
+						event.preventDefault();
+						button.classList.add('is-drop-target');
+						if (event.dataTransfer) {
+							event.dataTransfer.dropEffect = 'move';
+						}
+					});
+					button.addEventListener('dragleave', () => {
+						button.classList.remove('is-drop-target');
+					});
+					button.addEventListener('drop', (event) => {
+							event.preventDefault();
+							button.classList.remove('is-drop-target');
+							if (!draggedDeckName || draggedDeckName === name) return;
+							moveDeckToTarget(draggedDeckName, name);
+						});
+					}
+
+					const format = deckFormatMap[name] ?? 'custom';
+					const colorSymbols = deckIdentitySymbols(name);
+					const symbolsToRender = colorSymbols.length > 0 ? colorSymbols : ['C'];
+					const colorHtml = symbolsToRender
+						.map((symbol) => `<i class="ms ms-${symbol.toLowerCase()} ms-cost" aria-hidden="true"></i>`)
+						.join('');
+					button.innerHTML = `
+						<p class="deck-card-format">${escapeHtml(formatLabel(format))}</p>
+						<h3 class="deck-card-name">${escapeHtml(name)}</h3>
+						<div class="deck-card-colors" aria-label="Deck colors">${colorHtml}</div>
+					`;
+
+					button.addEventListener('click', () => {
+						activeDeckName = name;
+						activeDeckFormat = deckFormatMap[name] ?? 'custom';
+						deckHomeView.hidden = true;
+						deckDetailView.hidden = false;
+						void renderDeck();
+					});
+
+					if ((window as any).mtgIsAuthed) {
+						const editBtn = document.createElement('button');
+						editBtn.type = 'button';
+						editBtn.className = 'deck-edit-btn';
+						editBtn.textContent = 'Edit';
+						editBtn.addEventListener('click', (event) => {
+							event.stopPropagation();
+							openDeckEditor(name);
+						});
+						button.appendChild(editBtn);
+					}
+
+					deckGrid.appendChild(button);
+				});
+			};
+
+			const init = (): void => {
+				deckMap = readDeckMap();
+				deckFormatMap = readDeckFormats();
+				deckColorMap = readDeckColors();
+				deckCommanderMap = readDeckCommanders();
+
+				const savedDeckNames = readDeckNames();
+				const detectedDeckNames = Array.from(deckMap.keys());
+				const mergedDeckNames = [...savedDeckNames];
+				detectedDeckNames.forEach((deckName) => {
+					if (!mergedDeckNames.includes(deckName)) {
+						mergedDeckNames.push(deckName);
+					}
+				});
+
+				mergedDeckNames.forEach((deckName) => {
+					if (!deckMap.has(deckName)) {
+						deckMap.set(deckName, []);
+					}
+					if (!deckFormatMap[deckName]) {
+						deckFormatMap[deckName] = 'custom';
+					}
+					if (!deckColorMap[deckName]) {
+						deckColorMap[deckName] = '#2c3e50';
+					}
+				});
+
+				if (mergedDeckNames.length !== savedDeckNames.length || mergedDeckNames.some((name, index) => name !== savedDeckNames[index])) {
+					saveDeckNames(mergedDeckNames);
+				}
+				saveDeckMap();
+				saveDeckFormats(deckFormatMap);
+				saveDeckColors(deckColorMap);
+
+				renderDeckHome();
+
+				const params = new URLSearchParams(window.location.search);
+				const requestedDeck = (params.get('name') ?? '').trim();
+				if (requestedDeck && deckMap.has(requestedDeck)) {
+					activeDeckName = requestedDeck;
+					deckHomeView.hidden = true;
+					deckDetailView.hidden = false;
+					void renderDeck();
+				} else {
+					deckHomeView.hidden = false;
+					deckDetailView.hidden = true;
+				}
+			};
+
+			openDeckBtn.addEventListener('click', () => {
+				openCreateDeckEditor();
+			});
+
+			commanderPreview.addEventListener('click', async () => {
+				if (!activeDeckName || activeDeckFormat !== 'commander') return;
+				if (!activeCommanderCard) {
+					if (!(window as any).mtgIsAuthed) return;
+					const selected = await openCommanderSearchDialog('', 'commander');
+					if (!selected) return;
+					await setCommander(selected);
+					return;
+				}
+				openCommanderInspector();
+			});
+
+			changeCommanderBtn.addEventListener('click', async (event) => {
+				event.stopPropagation();
+				const inspectedCard = getInspectedCard();
+				if (!inspectedCard) return;
+				const mode = inspectorMode === 'commander' ? 'commander' : 'deck-card';
+				const selected = await openCommanderVersionDialog(inspectedCard.name);
+				if (!selected) return;
+				if (selected.name.trim().toLowerCase() !== inspectedCard.name.trim().toLowerCase()) {
+					window.alert('Choose another printing of the same card.');
+					if (mode === 'commander') {
+						openCommanderInspector();
+					} else if (inspectedDeckRow) {
+						inspectorMode = 'deck-row';
+						commanderInspectorBackdrop.hidden = false;
+						renderCommanderInspector();
+					}
+					return;
+				}
+				if (mode === 'commander') {
+					await setCommander({
+						...selected,
+						foil: activeCommanderCard?.foil ?? selected.foil,
+						lang: selected.lang ?? activeCommanderCard?.lang
+					});
+					openCommanderInspector();
+				} else {
+					inspectorMode = 'deck-row';
+					await updateInspectedCard({
+						id: selected.id,
+						name: selected.name,
+						imageUrl: selected.imageUrl,
+						imageUrlLarge: selected.imageUrlLarge,
+						scryfallUri: selected.scryfallUri,
+						setCode: selected.setCode,
+						setName: selected.setName,
+						collectorNumber: selected.collectorNumber,
+						lang: selected.lang ?? inspectedCard.lang
+					});
+					if (inspectedDeckRow) {
+						commanderInspectorBackdrop.hidden = false;
+						renderCommanderInspector();
+					}
+				}
+			});
+
+			removeCommanderBtn.addEventListener('click', async (event) => {
+				event.stopPropagation();
+				if (inspectorMode === 'commander') {
+					const confirmed = window.confirm('Remove commander from this deck?');
+					if (!confirmed) return;
+					clearCommander();
+					return;
+				}
+				if (inspectorMode === 'deck-row' && inspectedDeckRow) {
+					const confirmed = window.confirm(`Remove all ${inspectedDeckRow.count} copies of ${inspectedDeckRow.card.name} from this deck?`);
+					if (!confirmed) return;
+					await removeInspectedDeckRow();
+				}
+			});
+
+			proxyToggleBtn.addEventListener('click', async () => {
+				const card = getInspectedCard();
+				if (!card) return;
+				await updateInspectedCard({ proxy: !card.proxy });
+			});
+
+			addToCollectionBtn.addEventListener('click', (event) => {
+				event.stopPropagation();
+				const inspectedCard = getInspectedCard();
+				if (!inspectedCard) return;
+				const sourceKey = getInspectedCollectionSource();
+				if (!sourceKey) {
+					window.alert('Could not determine source for this card.');
+					return;
+				}
+				const result = addCardToCollection(inspectedCard, sourceKey);
+				window.alert(result.message);
+				if (result.ok) {
+					renderCommanderInspector();
+				}
+			});
+
+			commanderInspectorFoilSelect.addEventListener('change', () => {
+				const value = commanderInspectorFoilSelect.value as SlotCard['foil'];
+				void updateInspectedCard({ foil: value });
+			});
+
+			commanderInspectorLangSelect.addEventListener('change', () => {
+				const value = commanderInspectorLangSelect.value;
+				void updateInspectedCard({ lang: value });
+			});
+
+			closeCommanderInspectorBtn.addEventListener('click', closeCommanderInspector);
+
+			commanderInspectorBackdrop.addEventListener('click', (event) => {
+				if (event.target === commanderInspectorBackdrop) {
+					closeCommanderInspector();
+				}
+			});
+
+			commanderSearchCloseBtn.addEventListener('click', () => {
+				closeCommanderSearchModal(null);
+			});
+
+			commanderSearchBackBtn.addEventListener('click', () => {
+				restoreCommanderSearchList();
+			});
+
+			commanderSearchBackdrop.addEventListener('click', (event) => {
+				if (event.target === commanderSearchBackdrop) {
+					closeCommanderSearchModal(null);
+				}
+			});
+
+			commanderSearchInput.addEventListener('input', () => {
+				if (commanderSearchDebounceTimer !== null) {
+					window.clearTimeout(commanderSearchDebounceTimer);
+				}
+				commanderSearchDebounceTimer = window.setTimeout(() => {
+					void searchCommanderList(commanderSearchInput.value);
+				}, 250);
+			});
+
+			deckAddCardInput.addEventListener('input', () => {
+				if (!activeDeckName) return;
+				const query = deckAddCardInput.value.trim();
+				if (query.length < 2) {
+					closeDeckSearchPanel();
+					return;
+				}
+				if (deckSearchPanel.hidden) {
+					openDeckSearchPanel(deckAddCardInput.value);
+				}
+				if (deckSearchDebounceTimer !== null) {
+					window.clearTimeout(deckSearchDebounceTimer);
+				}
+				deckSearchDebounceTimer = window.setTimeout(() => {
+					void searchDeckCardList(deckAddCardInput.value);
+				}, 250);
+			});
+
+			deckSearchCloseBtn.addEventListener('click', () => {
+				closeDeckSearchPanel();
+			});
+
+			deckSearchBackBtn.addEventListener('click', () => {
+				restoreDeckSearchList();
+			});
+
+			deckEditorForm.addEventListener('submit', (event) => {
+				event.preventDefault();
+				if (!isCreateMode && !editingDeckName) return;
+
+				const nextName = editDeckNameInput.value.trim();
+				const nextColor = /^#[0-9a-fA-F]{6}$/.test(editDeckColorInput.value) ? editDeckColorInput.value : '#2c3e50';
+				const nextFormat = parseDeckFormat(editDeckFormatSelect.value);
+
+				if (!nextName) {
+					deckEditorStatus.textContent = 'Deck name is required.';
+					return;
+				}
+
+				const names = readDeckNames();
+
+				if (isCreateMode) {
+					if (names.includes(nextName)) {
+						deckEditorStatus.textContent = 'A deck with that name already exists.';
+						return;
+					}
+
+					names.push(nextName);
+					saveDeckNames(names);
+					deckFormatMap[nextName] = nextFormat;
+					deckColorMap[nextName] = '#2c3e50';
+					saveDeckFormats(deckFormatMap);
+					saveDeckColors(deckColorMap);
+
+					if (!deckMap.has(nextName)) {
+						deckMap.set(nextName, []);
+					}
+					saveDeckMap();
+
+					closeDeckEditor();
+					renderDeckHome();
+					activeDeckName = nextName;
+					activeDeckFormat = nextFormat;
+					deckHomeView.hidden = true;
+					deckDetailView.hidden = false;
+					void renderDeck();
+					return;
+				}
+
+				const isRename = editingDeckName !== nextName;
+				if (isRename && names.includes(nextName)) {
+					deckEditorStatus.textContent = 'A deck with that name already exists.';
+					return;
+				}
+
+				if (isRename) {
+					const cards = deckMap.get(editingDeckName) ?? [];
+					deckMap.delete(editingDeckName);
+					deckMap.set(nextName, cards);
+
+					if (deckFormatMap[editingDeckName]) {
+						deckFormatMap[nextName] = deckFormatMap[editingDeckName];
+						delete deckFormatMap[editingDeckName];
+					}
+					if (deckColorMap[editingDeckName]) {
+						deckColorMap[nextName] = deckColorMap[editingDeckName];
+						delete deckColorMap[editingDeckName];
+					}
+					if (deckCommanderMap[editingDeckName]) {
+						deckCommanderMap[nextName] = deckCommanderMap[editingDeckName];
+						delete deckCommanderMap[editingDeckName];
+					}
+
+					const renamedNames = names.map((name) => name === editingDeckName ? nextName : name);
+					saveDeckNames(renamedNames);
+					saveDeckMap();
+					if (activeDeckName === editingDeckName) {
+						activeDeckName = nextName;
+					}
+				}
+
+				deckColorMap[nextName] = nextColor;
+				deckFormatMap[nextName] = nextFormat;
+				saveDeckColors(deckColorMap);
+				saveDeckFormats(deckFormatMap);
+				saveDeckCommanders(deckCommanderMap);
+
+				closeDeckEditor();
+				init();
+			});
+
+			deleteDeckBtn.addEventListener('click', () => {
+				if (!editingDeckName) return;
+				const target = editingDeckName;
+				const ok = window.confirm(`Delete deck \"${target}\"? This removes all card assignments to this deck.`);
+				if (!ok) return;
+
+				deckMap.delete(target);
+				delete deckFormatMap[target];
+				delete deckColorMap[target];
+				delete deckCommanderMap[target];
+
+				const names = readDeckNames().filter((name) => name !== target);
+				saveDeckNames(names);
+				saveDeckMap();
+				saveDeckFormats(deckFormatMap);
+				saveDeckColors(deckColorMap);
+				saveDeckCommanders(deckCommanderMap);
+
+				if (activeDeckName === target) {
+					activeDeckName = '';
+					deckHomeView.hidden = false;
+					deckDetailView.hidden = true;
+				}
+
+				closeDeckEditor();
+				init();
+			});
+
+			closeDeckEditorBtn.addEventListener('click', () => {
+				closeDeckEditor();
+			});
+
+			deckEditorBackdrop.addEventListener('click', (event) => {
+				if (event.target === deckEditorBackdrop) {
+					closeDeckEditor();
+				}
+			});
+
+			const goBackToDecks = (): void => {
+				activeDeckName = '';
+				deckHomeView.hidden = false;
+				deckDetailView.hidden = true;
+				const url = new URL(window.location.href);
+				url.searchParams.delete('name');
+				window.history.replaceState({}, '', url.pathname + url.search);
+				init();
+			};
+
+			backToDecksBtnLeft.addEventListener('click', () => {
+				goBackToDecks();
+			});
+
+			window.addEventListener('storage', (event) => {
+				if (event.key === DECK_CARD_MAP_KEY || event.key === DECK_NAMES_KEY || event.key === DECK_FORMATS_KEY || event.key === DECK_COLORS_KEY || event.key === DECK_COMMANDERS_KEY) {
+					init();
+				}
+			});
+
+			init();
+		</script>
+	</body>
+</html>

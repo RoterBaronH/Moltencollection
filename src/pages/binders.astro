@@ -1,0 +1,641 @@
+---
+
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>My Binders</title>
+		<script src="/Moltencollection/auth.js" is:inline></script>
+		<style is:global>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				padding-top: 0;
+				background-color: #1a1a1a;
+			}
+			.nav {
+				display: flex;
+				gap: 0;
+				background-color: #333;
+				padding: 0;
+				margin: 0;
+			}
+			.nav-btn {
+				flex: 1;
+				padding: 15px 20px;
+				background-color: #333;
+				color: white;
+				text-decoration: none;
+				text-align: center;
+				cursor: pointer;
+				border: none;
+				border-right: 1px solid #555;
+				transition: background-color 0.3s;
+			}
+			.nav-btn:hover {
+				background-color: #555;
+			}
+			.nav-btn.active {
+				background-color: #0066cc;
+			}
+			.nav-btn:last-child {
+				border-right: none;
+			}
+			body > h1,
+			body > p {
+				padding: 20px;
+				max-width: 1000px;
+				margin: 0;
+				color: #fff;
+			}
+			.binder-grid {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 24px;
+				padding: 24px 20px;
+				max-width: 1200px;
+				margin: 0;
+			}
+			.binder-card {
+				position: relative;
+				width: 150px;
+				height: 180px;
+			}
+			.binder-card.is-draggable {
+				cursor: grab;
+			}
+			.binder-card.is-dragging {
+				opacity: 0.45;
+			}
+			.binder-card.is-drop-target .binder-link {
+				outline: 2px dashed rgba(255, 255, 255, 0.9);
+				outline-offset: 4px;
+			}
+			.binder-link {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 10px;
+				width: 150px;
+				height: 180px;
+				background: var(--binder-color, #2c3e50);
+				color: #fff;
+				text-decoration: none;
+				text-align: center;
+				border-radius: 14px;
+				box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+				padding: 16px 12px;
+				transition: transform 0.2s, box-shadow 0.2s;
+				overflow: hidden;
+			}
+			.binder-link:hover {
+				filter: brightness(1.15);
+				transform: translateY(-6px);
+				box-shadow: 0 14px 24px rgba(0, 0, 0, 0.5);
+			}
+			.binder-link h3 {
+				margin: 0;
+				font-size: 1.1rem;
+				font-weight: bold;
+				line-height: 1.2;
+				word-break: break-word;
+			}
+			.binder-link p {
+				margin: 0;
+				color: rgba(255, 255, 255, 0.85);
+				font-size: 0.75rem;
+				line-height: 1.3;
+				max-height: 40px;
+				overflow: hidden;
+			}
+			.edit-btn {
+				position: absolute;
+				bottom: 8px;
+				right: 8px;
+				z-index: 2;
+				padding: 4px 8px;
+				border: none;
+				border-radius: 6px;
+				background: rgba(0, 0, 0, 0.55);
+				color: #fff;
+				font-size: 11px;
+				cursor: pointer;
+				transition: background 0.2s;
+			}
+			.edit-btn:hover {
+				background: rgba(0, 0, 0, 0.8);
+			}
+			.add-binder {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 10px;
+				width: 150px;
+				height: 180px;
+				background: rgba(255, 255, 255, 0.75);
+				backdrop-filter: blur(4px);
+				color: #333;
+				font-size: 1.25rem;
+				font-weight: bold;
+				line-height: 1;
+				text-align: center;
+				border-radius: 14px;
+				border: 0;
+				font-family: inherit;
+				box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+				cursor: pointer;
+				text-decoration: none;
+				overflow: hidden;
+				transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+			}
+			.add-binder .plus {
+				font-size: 3rem;
+				line-height: 1;
+			}
+			.add-binder:hover {
+				filter: brightness(1.15);
+				background: rgba(255, 255, 255, 0.9);
+				transform: translateY(-6px);
+				box-shadow: 0 14px 24px rgba(0, 0, 0, 0.5);
+			}
+			.editor-backdrop {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.7);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 20px;
+				z-index: 1000;
+			}
+			.editor-backdrop[hidden] {
+				display: none;
+			}
+			.editor-modal {
+				width: 100%;
+				max-width: 560px;
+				background: #26323d;
+				border: 1px solid #3a4a58;
+				border-radius: 12px;
+				padding: 20px;
+				position: relative;
+				color: #fff;
+			}
+			.editor-close {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				width: 30px;
+				height: 30px;
+				border: none;
+				border-radius: 8px;
+				background: #374757;
+				color: #fff;
+				font-size: 18px;
+				line-height: 1;
+				cursor: pointer;
+			}
+			.editor-close:hover {
+				background: #4a5f73;
+			}
+			.editor-modal h2 {
+				margin-bottom: 14px;
+			}
+			.editor-modal label {
+				display: block;
+				font-weight: 700;
+				margin-bottom: 8px;
+			}
+			.editor-modal input,
+			.editor-modal textarea {
+				width: 100%;
+				padding: 10px 12px;
+				margin-bottom: 14px;
+				border: 1px solid #55697b;
+				border-radius: 8px;
+				background: #1f2a33;
+				color: #fff;
+				font-size: 16px;
+			}
+			.editor-modal textarea {
+				min-height: 100px;
+				resize: vertical;
+			}
+			.editor-modal input[type='color'] {
+				height: 50px;
+				padding: 5px;
+			}
+			.editor-actions {
+				display: flex;
+				gap: 10px;
+				margin-top: 6px;
+			}
+			.editor-actions button {
+				padding: 10px 14px;
+				border: none;
+				border-radius: 8px;
+				font-size: 15px;
+				cursor: pointer;
+			}
+			#save-binder-btn {
+				background: #2ea043;
+				color: #fff;
+			}
+			#delete-binder-btn {
+				background: #c03636;
+				color: #fff;
+			}
+			#save-binder-btn {
+				margin-left: auto;
+			}
+			.empty-state {
+				color: #c8d0d8;
+				font-size: 18px;
+				align-self: center;
+				margin-top: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="nav">
+			<a href="/Moltencollection/" class="nav-btn">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn active">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+		</nav>
+		<h1>My Binders</h1>
+		<p>View and manage your MTG card binders here.</p>
+
+		<div class="binder-grid" id="binder-grid">
+			<button type="button" id="open-binder-btn" class="add-binder auth-required" title="Create new binder">
+				<span class="plus">+</span>
+				<span>Add Binder</span>
+			</button>
+		</div>
+
+		<div class="editor-backdrop" id="editor-backdrop" hidden>
+			<div class="editor-modal">
+				<button type="button" class="editor-close" id="close-editor-btn" aria-label="Close">&times;</button>
+				<h2 id="editor-title">Create Binder</h2>
+				<form id="editor-form">
+					<input type="hidden" id="edit-binder-id" />
+
+					<label for="edit-binder-name">Binder Name</label>
+					<input id="edit-binder-name" type="text" maxlength="50" required />
+
+					<label for="edit-binder-color">Color</label>
+					<input id="edit-binder-color" type="color" value="#2c3e50" />
+
+					<div class="editor-actions">
+						<button type="button" id="delete-binder-btn" hidden>Delete</button>
+						<button type="submit" id="save-binder-btn">Save Changes</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<script>
+			type Binder = {
+				id: number;
+				name: string;
+				color: string;
+				pages?: unknown[][];
+			};
+
+			const STORAGE_KEY = 'mtgBinders';
+			const DEFAULT_COLOR = '#2c3e50';
+			const binderGrid = document.getElementById('binder-grid') as HTMLDivElement | null;
+			const openBinderButton = document.getElementById('open-binder-btn') as HTMLButtonElement | null;
+			const editorBackdrop = document.getElementById('editor-backdrop') as HTMLDivElement | null;
+			const editorTitle = document.getElementById('editor-title') as HTMLHeadingElement | null;
+			const editorForm = document.getElementById('editor-form') as HTMLFormElement | null;
+			const editIdInput = document.getElementById('edit-binder-id') as HTMLInputElement | null;
+			const editNameInput = document.getElementById('edit-binder-name') as HTMLInputElement | null;
+			const editColorInput = document.getElementById('edit-binder-color') as HTMLInputElement | null;
+			const deleteBinderButton = document.getElementById('delete-binder-btn') as HTMLButtonElement | null;
+			const closeEditorButton = document.getElementById('close-editor-btn') as HTMLButtonElement | null;
+
+			if (
+				!binderGrid ||
+				!openBinderButton ||
+				!editorBackdrop ||
+				!editorTitle ||
+				!editorForm ||
+				!editIdInput ||
+				!editNameInput ||
+				!editColorInput ||
+				!deleteBinderButton ||
+				!closeEditorButton
+			) {
+				throw new Error('Binder page UI is missing required elements.');
+			}
+
+			const isValidColor = (color: string): boolean => /^#[0-9a-fA-F]{6}$/.test(color);
+
+			const isStoredCard = (slot: unknown): boolean => {
+				if (!slot || typeof slot !== 'object') {
+					return false;
+				}
+
+				const card = slot as Record<string, unknown>;
+				return typeof card.id === 'string' && typeof card.name === 'string' && typeof card.scryfallUri === 'string';
+			};
+
+			const countBinderCards = (binder: Binder): number => {
+				const pages = Array.isArray(binder.pages) ? binder.pages : [];
+				let count = 0;
+
+				pages.forEach((page) => {
+					if (!Array.isArray(page)) {
+						return;
+					}
+
+					page.forEach((slot) => {
+						if (isStoredCard(slot)) {
+							count += 1;
+						}
+					});
+				});
+
+				return count;
+			};
+
+			const sanitizeBinders = (input: unknown): Binder[] => {
+				if (!Array.isArray(input)) {
+					return [];
+				}
+
+				return input
+					.filter((binder) => binder && typeof binder === 'object')
+					.map((binder) => {
+						const raw = binder as Record<string, unknown>;
+						const color = typeof raw.color === 'string' && isValidColor(raw.color) ? raw.color : DEFAULT_COLOR;
+						return {
+							id: typeof raw.id === 'number' ? raw.id : Date.now() + Math.floor(Math.random() * 1000),
+							name: typeof raw.name === 'string' && raw.name.trim() ? raw.name.trim() : 'Untitled Binder',
+							color,
+							pages: Array.isArray(raw.pages) ? (raw.pages as unknown[][]) : []
+						};
+					});
+			};
+
+			const readBinders = (): Binder[] => {
+				try {
+					const saved = localStorage.getItem(STORAGE_KEY);
+					if (!saved) {
+						return [];
+					}
+					return sanitizeBinders(JSON.parse(saved));
+				} catch {
+					return [];
+				}
+			};
+
+			let binders = readBinders();
+			let draggedBinderId: number | null = null;
+
+			const saveBinders = (): void => {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
+			};
+
+			const moveBinderToTarget = (binderId: number, targetBinderId: number): void => {
+				if (binderId === targetBinderId) return;
+
+				const currentIndex = binders.findIndex((binder) => binder.id === binderId);
+				const targetIndex = binders.findIndex((binder) => binder.id === targetBinderId);
+				if (currentIndex === -1 || targetIndex === -1) return;
+
+				const reordered = [...binders];
+				const [movedBinder] = reordered.splice(currentIndex, 1);
+				reordered.splice(targetIndex, 0, movedBinder);
+				binders = reordered;
+				saveBinders();
+				renderBinders();
+			};
+
+			const closeEditor = (): void => {
+				editorBackdrop.hidden = true;
+				editIdInput.value = '';
+				editorForm.reset();
+				editColorInput.value = DEFAULT_COLOR;
+				deleteBinderButton.hidden = true;
+				editorTitle.textContent = 'Create Binder';
+			};
+
+			const openCreateEditor = (): void => {
+				editIdInput.value = '';
+				editNameInput.value = '';
+				editColorInput.value = DEFAULT_COLOR;
+				deleteBinderButton.hidden = true;
+				editorTitle.textContent = 'Create Binder';
+				editorBackdrop.hidden = false;
+			};
+
+			const openEditor = (binderId: number): void => {
+				const binder = binders.find((item) => item.id === binderId);
+				if (!binder) {
+					return;
+				}
+
+				editIdInput.value = String(binder.id);
+				editNameInput.value = binder.name;
+				editColorInput.value = binder.color;
+				deleteBinderButton.hidden = false;
+				editorTitle.textContent = 'Edit Binder';
+				editorBackdrop.hidden = false;
+			};
+
+			const createBinderCard = (binder: Binder): HTMLElement => {
+				const card = document.createElement('article');
+				card.className = 'binder-card';
+				card.dataset.binderCard = 'true';
+				card.dataset.binderId = String(binder.id);
+
+				if ((window as any).mtgIsAuthed) {
+					card.classList.add('is-draggable');
+					card.draggable = true;
+					card.addEventListener('dragstart', (event) => {
+					draggedBinderId = binder.id;
+					card.classList.add('is-dragging');
+					if (event.dataTransfer) {
+						event.dataTransfer.effectAllowed = 'move';
+						event.dataTransfer.setData('text/plain', String(binder.id));
+					}
+				});
+				card.addEventListener('dragend', () => {
+					draggedBinderId = null;
+					card.classList.remove('is-dragging');
+					card.classList.remove('is-drop-target');
+				});
+				card.addEventListener('dragover', (event) => {
+					if (draggedBinderId === null || draggedBinderId === binder.id) return;
+					event.preventDefault();
+					card.classList.add('is-drop-target');
+					if (event.dataTransfer) {
+						event.dataTransfer.dropEffect = 'move';
+					}
+				});
+				card.addEventListener('dragleave', () => {
+					card.classList.remove('is-drop-target');
+				});
+				card.addEventListener('drop', (event) => {
+						event.preventDefault();
+						card.classList.remove('is-drop-target');
+						if (draggedBinderId === null || draggedBinderId === binder.id) return;
+						moveBinderToTarget(draggedBinderId, binder.id);
+					});
+				}
+
+				// The clickable card tile — same shape as Add Binder
+				const binderLink = document.createElement('a');
+				binderLink.className = 'binder-link';
+				binderLink.style.setProperty('--binder-color', binder.color || DEFAULT_COLOR);
+				binderLink.href = `/Moltencollection/binder?name=${encodeURIComponent(binder.name)}`;
+				binderLink.title = `Open ${binder.name}`;
+
+				const title = document.createElement('h3');
+				title.textContent = binder.name;
+
+				const count = document.createElement('p');
+				const cardCount = countBinderCards(binder);
+				count.textContent = `${cardCount} card${cardCount === 1 ? '' : 's'}`;
+
+				binderLink.appendChild(title);
+				binderLink.appendChild(count);
+
+				card.appendChild(binderLink);
+
+				if ((window as any).mtgIsAuthed) {
+					const editButton = document.createElement('button');
+					editButton.type = 'button';
+					editButton.className = 'edit-btn';
+					editButton.textContent = 'Edit';
+					editButton.addEventListener('click', (event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						openEditor(binder.id);
+					});
+					card.appendChild(editButton);
+				}
+
+				return card;
+			};
+
+			const renderBinders = (): void => {
+				const existingCards = binderGrid.querySelectorAll('[data-binder-card="true"]');
+				existingCards.forEach((card) => card.remove());
+
+				if (binders.length === 0) {
+					const empty = document.createElement('p');
+					empty.className = 'empty-state';
+					empty.dataset.binderCard = 'true';
+					empty.textContent = 'No binders yet. Click Add Binder to create one.';
+					binderGrid.appendChild(empty);
+					return;
+				}
+
+				binders.forEach((binder) => {
+					binderGrid.appendChild(createBinderCard(binder));
+				});
+			};
+
+			editorForm.addEventListener('submit', (event) => {
+				event.preventDefault();
+				const binderId = Number(editIdInput.value);
+				const isCreateMode = !editIdInput.value;
+				const binderName = editNameInput.value.trim();
+				const binderColor = isValidColor(editColorInput.value) ? editColorInput.value : DEFAULT_COLOR;
+
+				if (!binderName) {
+					return;
+				}
+
+				if (isCreateMode) {
+					binders.push({
+						id: Date.now(),
+						name: binderName,
+						color: binderColor
+					});
+
+					saveBinders();
+					renderBinders();
+					closeEditor();
+					return;
+				}
+
+				binders = binders.map((binder) => {
+					if (binder.id !== binderId) {
+						return binder;
+					}
+
+					return {
+						...binder,
+						name: binderName,
+						color: binderColor
+					};
+				});
+
+				saveBinders();
+				renderBinders();
+				closeEditor();
+			});
+
+			closeEditorButton.addEventListener('click', () => {
+				closeEditor();
+			});
+
+			deleteBinderButton.addEventListener('click', () => {
+				const binderId = Number(editIdInput.value);
+				if (!binderId) {
+					return;
+				}
+
+				const binder = binders.find((item) => item.id === binderId);
+				if (!binder) {
+					return;
+				}
+
+				const confirmed = window.confirm(`Delete binder "${binder.name}"?`);
+				if (!confirmed) {
+					return;
+				}
+
+				binders = binders.filter((item) => item.id !== binderId);
+				saveBinders();
+				renderBinders();
+				closeEditor();
+			});
+
+			openBinderButton.addEventListener('click', () => {
+				openCreateEditor();
+			});
+
+			editorBackdrop.addEventListener('click', (event) => {
+				if (event.target === editorBackdrop) {
+					closeEditor();
+				}
+			});
+
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && !editorBackdrop.hidden) {
+					closeEditor();
+				}
+			});
+
+			renderBinders();
+		</script>
+	</body>
+</html>

@@ -1,0 +1,82 @@
+---
+
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Home</title>
+		<script src="/Moltencollection/auth.js" is:inline></script>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				padding-top: 0;
+				background-color: #1a1a1a;
+			}
+			.nav {
+				display: flex;
+				gap: 0;
+				background-color: #333;
+				padding: 0;
+				margin: 0;
+			}
+			.nav-btn {
+				flex: 1;
+				padding: 15px 20px;
+				background-color: #333;
+				color: white;
+				text-decoration: none;
+				text-align: center;
+				cursor: pointer;
+				border: none;
+				border-right: 1px solid #555;
+				transition: background-color 0.3s;
+			}
+			.nav-btn:hover {
+				background-color: #555;
+			}
+			.nav-btn.active {
+				background-color: #0066cc;
+			}
+			.nav-btn:last-child {
+				border-right: none;
+			}
+			body > h1,
+			body > p {
+				padding: 20px;
+				max-width: 800px;
+				margin: 0;
+				color: #fff;
+			}
+			.disclaimer {
+				padding: 20px;
+				max-width: 800px;
+				margin: 40px 0 0;
+				color: #888;
+				font-size: 12px;
+				line-height: 1.6;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="nav">
+			<a href="/Moltencollection/" class="nav-btn active">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+		</nav>
+		<h1>Hideakis Sammlung</h1>
+		<p>Willkommen bei Hideakis Sammlung</p>
+		<p class="disclaimer">
+			This is a personal fan page and is not intended for commercial use. All card names, images, mana symbols, and related trademarks are property of Wizards of the Coast (WotC). This site is not produced, endorsed, supported, or affiliated with Wizards of the Coast. Card data is provided by Scryfall. Scryfall has not endorsed, paid for, or otherwise supported this website in any way.
+		</p>
+	</body>
+</html>
