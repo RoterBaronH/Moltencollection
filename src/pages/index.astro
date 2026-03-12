@@ -64,6 +64,68 @@
 				font-size: 12px;
 				line-height: 1.6;
 			}
+			.data-section {
+				padding: 20px;
+				max-width: 800px;
+				margin: 30px 0 0;
+			}
+			.data-section h2 {
+				color: #fff;
+				margin-bottom: 10px;
+				font-size: 18px;
+			}
+			.data-section p {
+				color: #aaa;
+				font-size: 13px;
+				margin-bottom: 15px;
+				padding: 0;
+			}
+			.data-btns {
+				display: flex;
+				gap: 12px;
+				flex-wrap: wrap;
+			}
+			.data-btn {
+				padding: 10px 20px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 14px;
+				color: #fff;
+				transition: background-color 0.2s;
+			}
+			.data-btn.export {
+				background-color: #0066cc;
+			}
+			.data-btn.export:hover {
+				background-color: #0055aa;
+			}
+			.data-btn.import {
+				background-color: #28a745;
+			}
+			.data-btn.import:hover {
+				background-color: #218838;
+			}
+			#import-file {
+				display: none;
+			}
+			#data-status {
+				margin-top: 12px;
+				padding: 10px;
+				border-radius: 4px;
+				display: none;
+				font-size: 13px;
+			}
+			#data-status.success {
+				display: block;
+				background-color: #1e4620;
+				color: #7ddf64;
+			}
+			#data-status.error {
+				display: block;
+				background-color: #4a1c1c;
+				color: #ff6b6b;
+			}
 		</style>
 	</head>
 	<body>
@@ -75,8 +137,81 @@
 		</nav>
 		<h1>Hideakis Sammlung</h1>
 		<p>Willkommen bei Hideakis Sammlung</p>
+
+		<div class="data-section auth-required">
+			<h2>Data Transfer</h2>
+			<p>Export your data from one browser/domain and import it on another. This transfers your binders, collection, and deck data.</p>
+			<div class="data-btns">
+				<button class="data-btn export" id="export-btn">Export Data</button>
+				<button class="data-btn import" id="import-btn">Import Data</button>
+				<input type="file" id="import-file" accept=".json" />
+			</div>
+			<div id="data-status"></div>
+		</div>
+
 		<p class="disclaimer">
 			This is a personal fan page and is not intended for commercial use. All card names, images, mana symbols, and related trademarks are property of Wizards of the Coast (WotC). This site is not produced, endorsed, supported, or affiliated with Wizards of the Coast. Card data is provided by Scryfall. Scryfall has not endorsed, paid for, or otherwise supported this website in any way.
 		</p>
+
+		<script is:inline>
+			const DATA_KEYS = ['mtgBinders', 'mtgCollection', 'mtgCollectionCardMeta', 'mtgDeckCards'];
+
+			document.getElementById('export-btn').addEventListener('click', function () {
+				const data = {};
+				DATA_KEYS.forEach(function (key) {
+					const val = localStorage.getItem(key);
+					if (val) data[key] = val;
+				});
+				if (Object.keys(data).length === 0) {
+					showStatus('No data found to export.', 'error');
+					return;
+				}
+				const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'mtg-collection-backup.json';
+				a.click();
+				URL.revokeObjectURL(url);
+				showStatus('Data exported successfully!', 'success');
+			});
+
+			document.getElementById('import-btn').addEventListener('click', function () {
+				document.getElementById('import-file').click();
+			});
+
+			document.getElementById('import-file').addEventListener('change', function (e) {
+				var file = e.target.files[0];
+				if (!file) return;
+				var reader = new FileReader();
+				reader.onload = function (ev) {
+					try {
+						var data = JSON.parse(ev.target.result);
+						var imported = 0;
+						DATA_KEYS.forEach(function (key) {
+							if (data[key]) {
+								localStorage.setItem(key, data[key]);
+								imported++;
+							}
+						});
+						if (imported === 0) {
+							showStatus('No recognized data found in file.', 'error');
+						} else {
+							showStatus('Imported ' + imported + ' data set(s) successfully! Reload the page to see your data.', 'success');
+						}
+					} catch (err) {
+						showStatus('Invalid file format.', 'error');
+					}
+				};
+				reader.readAsText(file);
+				e.target.value = '';
+			});
+
+			function showStatus(msg, type) {
+				var el = document.getElementById('data-status');
+				el.textContent = msg;
+				el.className = type;
+			}
+		</script>
 	</body>
 </html>
