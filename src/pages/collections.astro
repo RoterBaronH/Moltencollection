@@ -1182,23 +1182,32 @@
 			const deleteCollectionCard = async (): Promise<void> => {
 				if (!inspectedCollectionRow || inspectedBinderId === null) return;
 
-				const binders = readBinders();
-				const binder = binders.find((b) => b.id === inspectedBinderId);
-				if (!binder) return;
+				if (inspectedBinderId === -1) {
+					// Standalone collection card — remove from mtgCollection
+					const cards = readCollectionCards();
+					const key = collectionVariantKey(inspectedCollectionRow.card);
+					const updated = cards.filter((c) => collectionVariantKey(c) !== key);
+					localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(updated));
+				} else {
+					// Binder card — null out slot(s)
+					const binders = readBinders();
+					const binder = binders.find((b) => b.id === inspectedBinderId);
+					if (!binder) return;
 
-				const pages = Array.isArray(binder.pages) ? binder.pages : [];
-				if (!pages[inspectedPageIdx] || !Array.isArray(pages[inspectedPageIdx])) return;
+					const pages = Array.isArray(binder.pages) ? binder.pages : [];
+					if (!pages[inspectedPageIdx] || !Array.isArray(pages[inspectedPageIdx])) return;
 
-				const page = pages[inspectedPageIdx];
+					const page = pages[inspectedPageIdx];
 
-				for (const slotIdx of inspectedSlotIndices) {
-					if (slotIdx < page.length) {
-						page[slotIdx] = null;
+					for (const slotIdx of inspectedSlotIndices) {
+						if (slotIdx < page.length) {
+							page[slotIdx] = null;
+						}
 					}
-				}
 
-				binder.pages = pages;
-				saveBinders(binders);
+					binder.pages = pages;
+					saveBinders(binders);
+				}
 
 				closeCollectionInspector();
 				await buildCollection();
