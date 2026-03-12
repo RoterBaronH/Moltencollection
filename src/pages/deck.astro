@@ -2301,6 +2301,11 @@
 				const cards = (deckMap.get(activeDeckName) ?? []).filter((card) => rowKeyFromCard(card) !== rowKey);
 				deckMap.set(activeDeckName, cards);
 				saveDeckMap();
+				// Also remove from collection
+				const collectionCards = readCollectionCards();
+				const cardId = inspectedDeckRow.card.id;
+				const updatedCollection = collectionCards.filter((c) => c.id !== cardId);
+				saveCollectionCards(updatedCollection);
 				closeCommanderInspector();
 				await renderDeck();
 			};
