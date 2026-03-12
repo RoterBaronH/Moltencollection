@@ -666,14 +666,41 @@
 				padding: 12px 14px;
 				border-bottom: 1px solid #2a3a4a;
 			}
+			.card-search-row {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
 			.card-search-input {
-				width: 100%;
+				flex: 1;
 				padding: 10px 12px;
 				border-radius: 8px;
 				border: 1px solid #3a5064;
 				background: #0d1117;
 				color: #fff;
 				font-size: 14px;
+				min-width: 0;
+			}
+			.card-search-lang-toggle {
+				padding: 10px 14px;
+				border-radius: 8px;
+				border: 1px solid #3a5064;
+				background: #162230;
+				color: #9db0bf;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				white-space: nowrap;
+				transition: background 0.15s, color 0.15s;
+			}
+			.card-search-lang-toggle:hover {
+				background: #1e3248;
+				color: #fff;
+			}
+			.card-search-lang-toggle.lang-de {
+				background: #2a4a2a;
+				color: #7ddf64;
+				border-color: #3a6a3a;
 			}
 			.card-search-status {
 				padding: 10px 14px;
@@ -785,7 +812,10 @@
 						</div>
 					</div>
 					<div class="card-search-input-wrap">
-						<input id="card-search-input" class="card-search-input" type="text" placeholder="Search card name, e.g. Lightning Bolt" autocomplete="off" />
+						<div class="card-search-row">
+							<input id="card-search-input" class="card-search-input" type="text" placeholder="Search card name, e.g. Lightning Bolt" autocomplete="off" />
+							<button id="card-search-lang-toggle" class="card-search-lang-toggle" type="button" title="Toggle search language">EN</button>
+						</div>
 					</div>
 					<div id="card-search-status" class="card-search-status">Type at least 2 characters to search.</div>
 					<div id="card-search-results" class="card-search-results"></div>
@@ -873,6 +903,7 @@
 			type ScryfallCard = {
 				id: string;
 				name: string;
+				printed_name?: string;
 				scryfall_uri: string;
 				prints_search_uri?: string;
 				image_uris?: { small?: string; normal?: string };
@@ -940,6 +971,20 @@
 			const searchInputWrap = searchInput.parentElement as HTMLDivElement;
 			const searchStatus = document.getElementById('card-search-status') as HTMLElement;
 			const searchResults = document.getElementById('card-search-results') as HTMLElement;
+			const searchLangToggle = document.getElementById('card-search-lang-toggle') as HTMLButtonElement;
+			let searchLang: 'en' | 'de' = 'en';
+
+			searchLangToggle.addEventListener('click', () => {
+				searchLang = searchLang === 'en' ? 'de' : 'en';
+				searchLangToggle.textContent = searchLang.toUpperCase();
+				searchLangToggle.classList.toggle('lang-de', searchLang === 'de');
+				searchInput.placeholder = searchLang === 'de'
+					? 'Kartenname suchen, z.B. Blitzschlag'
+					: 'Search card name, e.g. Lightning Bolt';
+				if (searchInput.value.trim().length >= 2) {
+					searchCards(searchInput.value);
+				}
+			});
 			const inspectorBackdrop = document.getElementById('card-inspector-backdrop') as HTMLElement;
 			const inspectorLeft = document.getElementById('card-inspector-left') as HTMLElement;
 			const inspectorRemoveBtn = document.getElementById('card-inspector-remove') as HTMLButtonElement;
@@ -1412,10 +1457,11 @@
 					img.alt = card.name;
 					img.loading = 'lazy';
 
+					const displayName = (searchLang === 'de' && card.printed_name) ? card.printed_name : card.name;
 					const textWrap = document.createElement('div');
 					const name = document.createElement('div');
 					name.className = 'card-result-name';
-					name.textContent = card.name;
+					name.textContent = displayName;
 					const sub = document.createElement('div');
 					sub.className = 'card-result-sub';
 					sub.textContent = card.set_name ?? 'Magic: The Gathering';
@@ -1532,7 +1578,12 @@
 
 			const escapeScryfallRegex = (value: string): string => value.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&');
 
-			const buildNameContainsQuery = (value: string): string => `name:/${escapeScryfallRegex(value)}/`;
+			const buildNameContainsQuery = (value: string): string => {
+				if (searchLang === 'de') {
+					return `lang:de name:/${escapeScryfallRegex(value)}/`;
+				}
+				return `name:/${escapeScryfallRegex(value)}/`;
+			};
 
 			const searchCards = async (query: string): Promise<void> => {
 				const trimmed = query.trim();
@@ -1558,7 +1609,8 @@
 
 					let response = await requestCards(buildNameContainsQuery(trimmed));
 					if (!response.ok && response.status !== 404) {
-						response = await requestCards(`name:${trimmed}`);
+						const fallback = searchLang === 'de' ? `lang:de name:${trimmed}` : `name:${trimmed}`;
+						response = await requestCards(fallback);
 					}
 
 					if (currentToken !== searchToken) return;
@@ -1577,7 +1629,10 @@
 					const payload = await response.json() as { data?: ScryfallCard[] };
 					const nameNeedle = trimmed.toLowerCase();
 					const cards = (payload.data ?? [])
-						.filter((card) => (card.name ?? '').toLowerCase().includes(nameNeedle))
+						.filter((card) => {
+							const cardName = (searchLang === 'de' && card.printed_name ? card.printed_name : card.name ?? '').toLowerCase();
+							return cardName.includes(nameNeedle);
+						})
 						.slice(0, 24);
 					lastSearchCards = cards;
 					versionPickerCardName = '';
