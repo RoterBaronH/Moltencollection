@@ -496,7 +496,6 @@
 			.deck-section-name,
 			.deck-section-count {
 				display: inline-flex;
-				align-items: center;
 			}
 			.deck-section-count {
 				padding: 0;
@@ -1733,27 +1732,40 @@
 			const emptyBinderPage = (): BinderSlotValue[] => Array(BINDER_SLOTS_PER_PAGE).fill(null);
 
 			import { getBinders, saveBinder, getCollection, saveCollection } from '../firestoreSync';
-			const username = localStorage.getItem('mtgUsername') || '';
+			let publicView = false;
+			const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
 			let binders: BinderStorage[] = [];
-			getBinders(username).then((data) => {
-				binders = data;
-				// Optionally re-render UI here
+			function fetchBinders() {
+				getBinders(username()).then((data) => {
+					binders = data;
+					// Optionally re-render UI here
+				});
+			}
+			fetchBinders();
+			document.getElementById('publicViewToggle').addEventListener('change', (e) => {
+				publicView = e.target.checked;
+				fetchBinders();
+				document.body.classList.toggle('public-view', publicView);
 			});
 
 			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
+				if (publicView) return; // Disable saving in public mode
 				for (const binder of binders) {
-					await saveBinder(username, String(binder.id), binder);
+					await saveBinder(username(), String(binder.id), binder);
 				}
 			};
 
 			let collectionCards: SlotCard[] = [];
-			getCollection(username).then((data) => {
-				collectionCards = data?.cards ?? [];
-				// Optionally re-render UI here
-			});
-
+			function fetchCollection() {
+				getCollection(username()).then((data) => {
+					collectionCards = data?.cards ?? [];
+					// Optionally re-render UI here
+				});
+			}
+			fetchCollection();
 			const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-				await saveCollection(username, { cards });
+				if (publicView) return; // Disable saving in public mode
+				await saveCollection(username(), { cards });
 			};
 
 			const ensureBinderPages = (binder: BinderStorage): BinderSlotValue[][] => {

@@ -610,6 +610,11 @@
 			<a href="/Moltencollection/collections" class="nav-btn active">Collection</a>
 		</nav>
 
+		<div style="display: flex; justify-content: flex-end; margin: 10px 0;">
+			<label style="color: #fff; margin-right: 8px;">Public View</label>
+			<input type="checkbox" id="publicViewToggle" />
+		</div>
+
 		<main>
 			<div class="collection-header">
 				<h1 class="collection-title">Collection</h1>
@@ -795,15 +800,25 @@
 			};
 
 				import { getCollection, saveCollection } from '../firestoreSync';
-				const username = localStorage.getItem('mtgUsername') || '';
+				let publicView = false;
+				const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
 				let collectionCards: SlotCard[] = [];
-				getCollection(username).then((data) => {
-					collectionCards = data?.cards ?? [];
-					// Optionally re-render UI here
+				function fetchCollection() {
+					getCollection(username()).then((data) => {
+						collectionCards = data?.cards ?? [];
+						// Optionally re-render UI here
+					});
+				}
+				fetchCollection();
+				document.getElementById('publicViewToggle').addEventListener('change', (e) => {
+					publicView = e.target.checked;
+					fetchCollection();
+					document.body.classList.toggle('public-view', publicView);
 				});
 
 				const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-					await saveCollection(username, { cards });
+					if (publicView) return; // Disable saving in public mode
+					await saveCollection(username(), { cards });
 				};
 
 			const readMetaCache = (): Record<string, CardMeta> => {

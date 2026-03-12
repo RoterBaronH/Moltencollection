@@ -393,17 +393,26 @@
 					});
 			};
 
-			const username = localStorage.getItem('mtgUsername') || '';
+			let publicView = false;
+			const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
 			let binders: Binder[] = [];
-			getBinders(username).then((data) => {
-				binders = sanitizeBinders(data);
-				renderBinders();
+			function fetchBinders() {
+				getBinders(username()).then((data) => {
+					binders = sanitizeBinders(data);
+					renderBinders();
+				});
+			}
+			fetchBinders();
+			document.getElementById('publicViewToggle').addEventListener('change', (e) => {
+				publicView = e.target.checked;
+				fetchBinders();
+				document.body.classList.toggle('public-view', publicView);
 			});
-			let draggedBinderId: number | null = null;
 
 			const saveBinders = async (): Promise<void> => {
+				if (publicView) return; // Disable saving in public mode
 				for (const binder of binders) {
-					await saveBinder(username, String(binder.id), binder);
+					await saveBinder(username(), String(binder.id), binder);
 				}
 			};
 
