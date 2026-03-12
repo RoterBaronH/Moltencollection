@@ -1372,9 +1372,9 @@
 			const addCardToPendingSlot = (card: ScryfallCard): void => {
 				if (!pendingSlot) return;
 				const existing = asSlotCard(binder.pages[pendingSlot.pageIdx]?.[pendingSlot.slotIdx] ?? null);
-				const preferredFinish = card.finishes?.includes('foil')
-					? 'foil'
-					: (card.finishes?.includes('etched') ? 'etched' : 'nonfoil');
+				const preferredFinish = card.finishes?.includes('nonfoil')
+					? 'nonfoil'
+					: (card.finishes?.includes('etched') ? 'etched' : 'foil');
 				const slotCard: SlotCard = {
 					id: card.id,
 					name: card.name,
