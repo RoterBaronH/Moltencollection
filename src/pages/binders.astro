@@ -393,27 +393,15 @@
 					});
 			};
 
-			let publicView = false;
-			const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
+			const username = 'public';
 			let binders: Binder[] = [];
-			function fetchBinders() {
-				getBinders(username()).then((data) => {
-					binders = sanitizeBinders(data);
-					renderBinders();
-				});
-			}
-			fetchBinders();
-			document.getElementById('publicViewToggle').addEventListener('change', (e) => {
-				publicView = e.target.checked;
-				fetchBinders();
-				document.body.classList.toggle('public-view', publicView);
+			getBinders(username).then((data) => {
+				binders = sanitizeBinders(data);
+				renderBinders();
 			});
 
 			const saveBinders = async (): Promise<void> => {
-				if (publicView) return; // Disable saving in public mode
-				for (const binder of binders) {
-					await saveBinder(username(), String(binder.id), binder);
-				}
+				return; // Disable saving for visitors
 			};
 
 			const moveBinderToTarget = (binderId: number, targetBinderId: number): void => {

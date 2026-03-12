@@ -800,25 +800,15 @@
 			};
 
 				import { getCollection, saveCollection } from '../firestoreSync';
-				let publicView = false;
-				const username = () => publicView ? 'public' : (localStorage.getItem('mtgUsername') || '');
+				const username = 'public';
 				let collectionCards: SlotCard[] = [];
-				function fetchCollection() {
-					getCollection(username()).then((data) => {
-						collectionCards = data?.cards ?? [];
-						// Optionally re-render UI here
-					});
-				}
-				fetchCollection();
-				document.getElementById('publicViewToggle').addEventListener('change', (e) => {
-					publicView = e.target.checked;
-					fetchCollection();
-					document.body.classList.toggle('public-view', publicView);
+				getCollection(username).then((data) => {
+					collectionCards = data?.cards ?? [];
+					// Optionally re-render UI here
 				});
 
 				const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-					if (publicView) return; // Disable saving in public mode
-					await saveCollection(username(), { cards });
+					return; // Disable saving for visitors
 				};
 
 			const readMetaCache = (): Record<string, CardMeta> => {

@@ -1749,10 +1749,7 @@
 			});
 
 			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
-				if (publicView) return; // Disable saving in public mode
-				for (const binder of binders) {
-					await saveBinder(username(), String(binder.id), binder);
-				}
+				return; // Disable saving for visitors
 			};
 
 			let collectionCards: SlotCard[] = [];
@@ -1764,8 +1761,7 @@
 			}
 			fetchCollection();
 			const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-				if (publicView) return; // Disable saving in public mode
-				await saveCollection(username(), { cards });
+				return; // Disable saving for visitors
 			};
 
 			const ensureBinderPages = (binder: BinderStorage): BinderSlotValue[][] => {
