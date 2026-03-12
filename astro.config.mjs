@@ -3,5 +3,6 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.hideakimtg.com',
+  site: 'https://RoterBaronH.github.io',
+  base: '/Moltencollection/',
 });

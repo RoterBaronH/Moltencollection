@@ -5,11 +5,11 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>My Binders</title>
-		<script src="/auth.js" is:inline></script>
+		<script src="/Moltencollection/auth.js" is:inline></script>
 		<style is:global>
 			* {
 				margin: 0;
@@ -271,10 +271,10 @@
 	</head>
 	<body>
 		<nav class="nav">
-			<a href="/" class="nav-btn">Home</a>
-			<a href="/binders" class="nav-btn active">My Binders</a>
-			<a href="/deck" class="nav-btn">My Decks</a>
-			<a href="/collections" class="nav-btn">Collection</a>
+			<a href="/Moltencollection/" class="nav-btn">Home</a>
+			<a href="/Moltencollection/binders" class="nav-btn active">My Binders</a>
+			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
+			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
 		</nav>
 		<h1>My Binders</h1>
 		<p>View and manage your MTG card binders here.</p>
@@ -503,7 +503,7 @@
 				const binderLink = document.createElement('a');
 				binderLink.className = 'binder-link';
 				binderLink.style.setProperty('--binder-color', binder.color || DEFAULT_COLOR);
-				binderLink.href = `/binder?name=${encodeURIComponent(binder.name)}`;
+				binderLink.href = `/Moltencollection/binder?name=${encodeURIComponent(binder.name)}`;
 				binderLink.title = `Open ${binder.name}`;
 
 				const title = document.createElement('h3');
