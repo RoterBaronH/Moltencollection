@@ -170,39 +170,39 @@
 			</form>
 		</main>
 
-		<script>
-			const form = document.getElementById('new-binder-form') as HTMLFormElement | null;
-			const status = document.getElementById('status') as HTMLParagraphElement | null;
+		<script type="module">
+		import { saveBinder } from '../../firestoreSync';
+		const form = document.getElementById('new-binder-form');
+		const status = document.getElementById('status');
 
-			if (!form || !status) {
-				throw new Error('Required form elements are missing.');
+		if (!form || !status) {
+			throw new Error('Required form elements are missing.');
+		}
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			const formData = new FormData(form);
+			const binderName = String(formData.get('binderName') || '').trim();
+			const colorInput = String(formData.get('color') || '#2c3e50');
+			const color = /^#[0-9a-fA-F]{6}$/.test(colorInput) ? colorInput : '#2c3e50';
+
+			if (!binderName) {
+				status.textContent = 'Binder name is required.';
+				return;
 			}
 
-			form.addEventListener('submit', (event) => {
-				event.preventDefault();
-				const formData = new FormData(form);
-				const binderName = String(formData.get('binderName') || '').trim();
-				const colorInput = String(formData.get('color') || '#2c3e50');
-				const color = /^#[0-9a-fA-F]{6}$/.test(colorInput) ? colorInput : '#2c3e50';
-
-				if (!binderName) {
-					status.textContent = 'Binder name is required.';
-					return;
-				}
-
-				import { saveBinder } from '../../firestoreSync';
-				const username = localStorage.getItem('mtgUsername') || '';
-				const newBinder = {
-					id: Date.now(),
-					name: binderName,
-					color
-				};
-				await saveBinder(username, String(newBinder.id), newBinder);
-				status.textContent = 'Binder created. Redirecting...';
-				setTimeout(() => {
-					window.location.href = '/Moltencollection/binders';
-				}, 500);
-			});
+			const username = localStorage.getItem('mtgUsername') || '';
+			const newBinder = {
+				id: Date.now(),
+				name: binderName,
+				color
+			};
+			await saveBinder(username, String(newBinder.id), newBinder);
+			status.textContent = 'Binder created. Redirecting...';
+			setTimeout(() => {
+				window.location.href = '/Moltencollection/binders';
+			}, 500);
+		});
 		</script>
 	</body>
 </html>
