@@ -794,13 +794,16 @@
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
 			};
 
-				const readCollectionCards = (): SlotCard[] => {
-					try {
-						const raw = localStorage.getItem(COLLECTION_STORAGE_KEY);
-						return raw ? (JSON.parse(raw) as SlotCard[]) : [];
-					} catch {
-						return [];
-					}
+				import { getCollection, saveCollection } from '../firestoreSync';
+				const username = localStorage.getItem('mtgUsername') || '';
+				let collectionCards: SlotCard[] = [];
+				getCollection(username).then((data) => {
+					collectionCards = data?.cards ?? [];
+					// Optionally re-render UI here
+				});
+
+				const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
+					await saveCollection(username, { cards });
 				};
 
 			const readMetaCache = (): Record<string, CardMeta> => {
@@ -1187,7 +1190,7 @@
 					const cards = readCollectionCards();
 					const key = collectionVariantKey(inspectedCollectionRow.card);
 					const updated = cards.filter((c) => collectionVariantKey(c) !== key);
-					localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(updated));
+					await saveCollectionCards(updated);
 				} else {
 					// Binder card — null out slot(s)
 					const binders = readBinders();

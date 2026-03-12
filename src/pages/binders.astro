@@ -315,6 +315,7 @@
 				pages?: unknown[][];
 			};
 
+			import { getBinders, saveBinder } from '../firestoreSync';
 			const STORAGE_KEY = 'mtgBinders';
 			const DEFAULT_COLOR = '#2c3e50';
 			const binderGrid = document.getElementById('binder-grid') as HTMLDivElement | null;
@@ -392,23 +393,18 @@
 					});
 			};
 
-			const readBinders = (): Binder[] => {
-				try {
-					const saved = localStorage.getItem(STORAGE_KEY);
-					if (!saved) {
-						return [];
-					}
-					return sanitizeBinders(JSON.parse(saved));
-				} catch {
-					return [];
-				}
-			};
-
-			let binders = readBinders();
+			const username = localStorage.getItem('mtgUsername') || '';
+			let binders: Binder[] = [];
+			getBinders(username).then((data) => {
+				binders = sanitizeBinders(data);
+				renderBinders();
+			});
 			let draggedBinderId: number | null = null;
 
-			const saveBinders = (): void => {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
+			const saveBinders = async (): Promise<void> => {
+				for (const binder of binders) {
+					await saveBinder(username, String(binder.id), binder);
+				}
 			};
 
 			const moveBinderToTarget = (binderId: number, targetBinderId: number): void => {

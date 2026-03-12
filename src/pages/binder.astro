@@ -1682,6 +1682,9 @@
 						if (slot.foil === 'etched') {
 							button.classList.add('slot-etched');
 						}
+						if (slot.inDeck) {
+							button.classList.add('slot-in-deck');
+						}
 						button.title = slot.name;
 						if (slot.imageUrl) {
 							const img = document.createElement('img');
@@ -1697,6 +1700,31 @@
 							text.textContent = slot.name;
 							button.appendChild(text);
 						}
+						// Add 'In Deck' button
+						const inDeckBtn = document.createElement('button');
+						inDeckBtn.type = 'button';
+						inDeckBtn.className = 'card-inspector-deck-btn';
+						inDeckBtn.textContent = slot.inDeck ? 'In Deck' : 'Add to Deck';
+						if (slot.inDeck) {
+							inDeckBtn.classList.add('is-active');
+						}
+						inDeckBtn.style.marginTop = '6px';
+						inDeckBtn.addEventListener('click', (e) => {
+							e.stopPropagation();
+							if (!slot.inDeck) {
+								const deckName = window.prompt('Enter deck name for this card:');
+								if (deckName && deckName.trim()) {
+									slot.inDeck = true;
+									slot.deckName = deckName.trim();
+								}
+							} else {
+								slot.inDeck = false;
+								slot.deckName = undefined;
+							}
+							persistBinder();
+							renderSpread();
+						});
+						button.appendChild(inDeckBtn);
 						const cardData = asSlotCard(slot);
 						if (cardData) {
 							button.addEventListener('click', () => openCardInspector(pageIdx, slotIdx, cardData));

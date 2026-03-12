@@ -71,6 +71,7 @@
 			backdrop.innerHTML =
 				'<div class="login-modal">' +
 				'<h2>Login</h2>' +
+				'<input type="text" id="login-username" placeholder="Username" autocomplete="username" style="margin-bottom:10px;" />' +
 				'<input type="password" id="login-password" placeholder="Password" autocomplete="current-password" />' +
 				'<div id="login-error" class="login-error" hidden>Incorrect password</div>' +
 				'<div class="login-actions">' +
@@ -83,10 +84,12 @@
 			var pwInput = document.getElementById('login-password');
 			var errorEl = document.getElementById('login-error');
 
+			var userInput = document.getElementById('login-username');
 			document.getElementById('login-submit').addEventListener('click', async function () {
 				var hash = await sha256(pwInput.value);
 				if (hash === PASS_HASH) {
 					localStorage.setItem(AUTH_KEY, 'true');
+					localStorage.setItem('mtgUsername', userInput.value.trim());
 					window.location.reload();
 				} else {
 					errorEl.hidden = false;
