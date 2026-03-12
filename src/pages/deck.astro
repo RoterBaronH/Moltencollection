@@ -1515,7 +1515,7 @@
 
 			const pickCardImageSmall = (card: ScryfallSearchCard): string | null => {
 				if (card.image_uris?.small) return card.image_uris.small;
-				const firstFace = card.card_faces?.find((face) => !!face.image_uris?.small);
+				const firstFace = card.card_faces?.find((face) => face.image_uris?.small);
 				return firstFace?.image_uris?.small ?? null;
 			};
 
@@ -3260,9 +3260,17 @@
 				}
 			});
 
-			commanderInspectorFoilSelect.addEventListener('change', () => {
+			commanderInspectorFoilSelect.addEventListener('change', async () => {
 				const value = commanderInspectorFoilSelect.value as SlotCard['foil'];
-				void updateInspectedCard({ foil: value });
+				await updateInspectedCard({ foil: value });
+				// Re-open inspector for updated row
+				if (inspectorMode === 'deck-row' && inspectedDeckRow) {
+					const updatedKey = rowKeyFromCard({ ...inspectedDeckRow.card, foil: value });
+					const nextRow = currentRows.find((row) => row.key === updatedKey);
+					if (nextRow) {
+						openDeckRowInspector(nextRow);
+					}
+				}
 			});
 
 			commanderInspectorLangSelect.addEventListener('change', () => {
