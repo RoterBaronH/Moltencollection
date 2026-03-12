@@ -1,0 +1,55 @@
+---
+---
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Migrate to Public</title>
+  <meta name="viewport" content="width=device-width" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #1a1a1a; color: #fff; }
+    .container { max-width: 600px; margin: 40px auto; padding: 24px; background: #222; border-radius: 12px; }
+    button { padding: 12px 24px; font-size: 16px; border-radius: 8px; border: none; background: #0066cc; color: #fff; cursor: pointer; }
+    .success { color: #2ea043; margin-top: 16px; }
+    .error { color: #c03636; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Migrate Your Data to Public</h1>
+    <p>This will copy your binders, decks, and collection to the public view so all visitors can see them.</p>
+    <button id="migrateBtn">Migrate Now</button>
+    <div id="status"></div>
+  </div>
+  <script type="module">
+    import { getBinders, saveBinder, getDecks, saveDeck, getCollection, saveCollection } from '../firestoreSync';
+    const migrateBtn = document.getElementById('migrateBtn');
+    const statusDiv = document.getElementById('status');
+    migrateBtn.addEventListener('click', async () => {
+      migrateBtn.disabled = true;
+      statusDiv.textContent = 'Migrating...';
+      const username = localStorage.getItem('mtgUsername') || '';
+      try {
+        // Migrate binders
+        const binders = await getBinders(username);
+        for (const binder of binders) {
+          await saveBinder('public', String(binder.id), binder);
+        }
+        // Migrate decks
+        const decks = await getDecks(username);
+        for (const deck of decks) {
+          await saveDeck('public', String(deck.id), deck);
+        }
+        // Migrate collection
+        const collection = await getCollection(username);
+        if (collection) {
+          await saveCollection('public', collection);
+        }
+        statusDiv.innerHTML = '<span class="success">Migration complete! Your data is now public.</span>';
+      } catch (err) {
+        statusDiv.innerHTML = '<span class="error">Migration failed: ' + err + '</span>';
+        migrateBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
