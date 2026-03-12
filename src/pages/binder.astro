@@ -4,12 +4,12 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/Moltencollection/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Binder</title>
-		<script src="/Moltencollection/auth.js" is:inline></script>
+		<script src="/auth.js" is:inline></script>
 		<style is:global>
 			* {
 				margin: 0;
@@ -729,15 +729,15 @@
 	</head>
 	<body>
 		<nav class="nav">
-			<a href="/Moltencollection/" class="nav-btn">Home</a>
-			<a href="/Moltencollection/binders" class="nav-btn active">My Binders</a>
-			<a href="/Moltencollection/deck" class="nav-btn">My Decks</a>
-			<a href="/Moltencollection/collections" class="nav-btn">Collection</a>
+			<a href="/" class="nav-btn">Home</a>
+			<a href="/binders" class="nav-btn active">My Binders</a>
+			<a href="/deck" class="nav-btn">My Decks</a>
+			<a href="/collections" class="nav-btn">Collection</a>
 		</nav>
 
 		<main>
 			<section id="binder-missing" class="not-found" hidden>
-				<a href="/Moltencollection/binders" class="back-link">&larr; Back</a>
+				<a href="/binders" class="back-link">&larr; Back</a>
 				<h1 style="margin-bottom:10px">Binder Not Found</h1>
 				<p>That binder could not be found.</p>
 			</section>
@@ -746,7 +746,7 @@
 				<div class="binder-header">
 					<div class="binder-heading">
 						<div class="binder-title-row">
-							<a href="/Moltencollection/binders" class="back-link">&larr; Back</a>
+							<a href="/binders" class="back-link">&larr; Back</a>
 							<span class="binder-title" id="binder-name"></span>
 						</div>
 					</div>
@@ -795,7 +795,7 @@
 			<div id="card-inspector-backdrop" class="card-inspector-backdrop" hidden>
 				<div class="card-inspector-modal" role="dialog" aria-modal="true" aria-labelledby="card-inspector-title">
 					<div id="card-inspector-left" class="card-inspector-left">
-						<img id="card-inspector-image" class="card-inspector-image" alt="Selected card" src="/Moltencollection/favicon.svg" />
+						<img id="card-inspector-image" class="card-inspector-image" alt="Selected card" src="/favicon.svg" />
 					</div>
 					<div class="card-inspector-right">
 						<div class="card-inspector-header">
