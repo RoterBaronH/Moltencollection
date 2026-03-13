@@ -10,8 +10,6 @@
 
 	if (!window.mtgIsAuthed) {
 		document.documentElement.classList.add('viewer-mode');
-		// Disable editing features for viewers
-		// Optionally show a banner or message for viewers
 	}
 
 	var css = document.createElement('style');
@@ -126,10 +124,4 @@
 			pwInput.focus();
 		}
 	});
-
-	// Show viewer mode banner for non-authenticated users in collections and binders pages
-	if (!window.mtgIsAuthed) {
-		var banner = document.getElementById('viewer-banner');
-		if (banner) banner.style.display = 'block';
-	}
 })();
