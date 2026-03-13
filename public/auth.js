@@ -97,7 +97,7 @@
 			});
 
 			document.getElementById('login-cancel').addEventListener('click', function () {
-				backdrop.hidden = true;
+				backdrop.remove();
 				pwInput.value = '';
 				errorEl.hidden = true;
 			});
@@ -108,7 +108,7 @@
 
 			backdrop.addEventListener('click', function (e) {
 				if (e.target === backdrop) {
-					backdrop.hidden = true;
+					backdrop.remove();
 					pwInput.value = '';
 					errorEl.hidden = true;
 				}
