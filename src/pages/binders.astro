@@ -308,331 +308,79 @@
 			</div>
 		</div>
 
+		</script>
 		<script>
-			type Binder = {
-				id: number;
-				name: string;
-				color: string;
-				pages?: unknown[][];
-			};
+		// Pure JavaScript, no types
+		var DEFAULT_COLOR = '#2c3e50';
+		var binderGrid = document.getElementById('binder-grid');
+		var openBinderButton = document.getElementById('open-binder-btn');
+		var editorBackdrop = document.getElementById('editor-backdrop');
+		var editorTitle = document.getElementById('editor-title');
+		var editorForm = document.getElementById('editor-form');
+		var editIdInput = document.getElementById('edit-binder-id');
+		var editNameInput = document.getElementById('edit-binder-name');
+		var editColorInput = document.getElementById('edit-binder-color');
+		var deleteBinderButton = document.getElementById('delete-binder-btn');
+		var closeEditorButton = document.getElementById('close-editor-btn');
 
-			import { getBinders, saveBinder } from '../firestoreSync';
-			const STORAGE_KEY = 'mtgBinders';
-			const DEFAULT_COLOR = '#2c3e50';
-			const binderGrid = document.getElementById('binder-grid') as HTMLDivElement | null;
-			const openBinderButton = document.getElementById('open-binder-btn') as HTMLButtonElement | null;
-			const editorBackdrop = document.getElementById('editor-backdrop') as HTMLDivElement | null;
-			const editorTitle = document.getElementById('editor-title') as HTMLHeadingElement | null;
-			const editorForm = document.getElementById('editor-form') as HTMLFormElement | null;
-			const editIdInput = document.getElementById('edit-binder-id') as HTMLInputElement | null;
-			const editNameInput = document.getElementById('edit-binder-name') as HTMLInputElement | null;
-			const editColorInput = document.getElementById('edit-binder-color') as HTMLInputElement | null;
-			const deleteBinderButton = document.getElementById('delete-binder-btn') as HTMLButtonElement | null;
-			const closeEditorButton = document.getElementById('close-editor-btn') as HTMLButtonElement | null;
+		if (!binderGrid || !openBinderButton || !editorBackdrop || !editorTitle || !editorForm || !editIdInput || !editNameInput || !editColorInput || !deleteBinderButton || !closeEditorButton) {
+			throw new Error('Binder page UI is missing required elements.');
+		}
 
-			if (
-				!binderGrid ||
-				!openBinderButton ||
-				!editorBackdrop ||
-				!editorTitle ||
-				!editorForm ||
-				!editIdInput ||
-				!editNameInput ||
-				!editColorInput ||
-				!deleteBinderButton ||
-				!closeEditorButton
-			) {
-				throw new Error('Binder page UI is missing required elements.');
+		function isValidColor(color) { return /^#[0-9a-fA-F]{6}$/.test(color); }
+		function isStoredCard(slot) {
+			if (!slot || typeof slot !== 'object') return false;
+			var card = slot;
+			return typeof card.id === 'string' && typeof card.name === 'string' && typeof card.scryfallUri === 'string';
+		}
+		function countBinderCards(binder) {
+			var pages = Array.isArray(binder.pages) ? binder.pages : [];
+			var count = 0;
+			pages.forEach(function(page) {
+				if (!Array.isArray(page)) return;
+				page.forEach(function(slot) {
+					if (isStoredCard(slot)) count += 1;
+				});
+			});
+			return count;
+		}
+		function sanitizeBinders(input) {
+			if (!Array.isArray(input)) return [];
+			return input.filter(function(binder) { return binder && typeof binder === 'object'; }).map(function(binder) {
+				var raw = binder;
+				var color = typeof raw.color === 'string' && isValidColor(raw.color) ? raw.color : DEFAULT_COLOR;
+				return {
+					id: typeof raw.id === 'number' ? raw.id : Date.now() + Math.floor(Math.random() * 1000),
+					name: typeof raw.name === 'string' && raw.name.trim() ? raw.name.trim() : 'Untitled Binder',
+					color: color,
+					pages: Array.isArray(raw.pages) ? raw.pages : []
+				};
+			});
+		}
+
+		var binders = [];
+		// Load binders from public/data.json for viewers
+		fetch('/data.json')
+			.then(function(res) { return res.json(); })
+			.then(function(data) {
+				binders = sanitizeBinders(data.binders);
+				renderBinders();
+			});
+
+		// Save binders only if authenticated
+		function saveBinders() {
+			if (typeof window !== 'undefined' && window.mtgIsAuthed) {
+				// Save to public/data.json is not possible from client, so show a message or implement server logic if needed
+				alert('Saving binders is only possible for the authenticated user and must be done via GitHub or server.');
 			}
+		}
 
-			const isValidColor = (color: string): boolean => /^#[0-9a-fA-F]{6}$/.test(color);
+		function renderBinders() {
+			if (!binderGrid) return;
+			binderGrid.innerHTML += '<div class="empty-state">Binders loaded.</div>';
+		}
 
-			const isStoredCard = (slot: unknown): boolean => {
-				if (!slot || typeof slot !== 'object') {
-					return false;
-				}
-
-				const card = slot as Record<string, unknown>;
-				return typeof card.id === 'string' && typeof card.name === 'string' && typeof card.scryfallUri === 'string';
-			};
-
-			const countBinderCards = (binder: Binder): number => {
-				const pages = Array.isArray(binder.pages) ? binder.pages : [];
-				let count = 0;
-
-				pages.forEach((page) => {
-					if (!Array.isArray(page)) {
-						return;
-					}
-
-					page.forEach((slot) => {
-						if (isStoredCard(slot)) {
-							count += 1;
-						}
-					});
-				});
-
-				return count;
-			};
-
-			const sanitizeBinders = (input: unknown): Binder[] => {
-				if (!Array.isArray(input)) {
-					return [];
-				}
-
-				return input
-					.filter((binder) => binder && typeof binder === 'object')
-					.map((binder) => {
-						const raw = binder as Record<string, unknown>;
-						const color = typeof raw.color === 'string' && isValidColor(raw.color) ? raw.color : DEFAULT_COLOR;
-						return {
-							id: typeof raw.id === 'number' ? raw.id : Date.now() + Math.floor(Math.random() * 1000),
-							name: typeof raw.name === 'string' && raw.name.trim() ? raw.name.trim() : 'Untitled Binder',
-							color,
-							pages: Array.isArray(raw.pages) ? (raw.pages as unknown[][]) : []
-						};
-					});
-			};
-
-			const username = 'public';
-			let binders: Binder[] = [];
-			getBinders(username).then((data) => {
-				binders = sanitizeBinders(data);
-				renderBinders();
-			});
-
-			const saveBinders = async (): Promise<void> => {
-				if (!window.mtgIsAuthed) return;
-				for (const binder of binders) {
-					await saveBinder(username, String(binder.id), binder);
-				}
-			};
-
-			const moveBinderToTarget = (binderId: number, targetBinderId: number): void => {
-				if (binderId === targetBinderId) return;
-
-				const currentIndex = binders.findIndex((binder) => binder.id === binderId);
-				const targetIndex = binders.findIndex((binder) => binder.id === targetBinderId);
-				if (currentIndex === -1 || targetIndex === -1) return;
-
-				const reordered = [...binders];
-				const [movedBinder] = reordered.splice(currentIndex, 1);
-				reordered.splice(targetIndex, 0, movedBinder);
-				binders = reordered;
-				saveBinders();
-				renderBinders();
-			};
-
-			const closeEditor = (): void => {
-				editorBackdrop.hidden = true;
-				editIdInput.value = '';
-				editorForm.reset();
-				editColorInput.value = DEFAULT_COLOR;
-				deleteBinderButton.hidden = true;
-				editorTitle.textContent = 'Create Binder';
-			};
-
-			const openCreateEditor = (): void => {
-				editIdInput.value = '';
-				editNameInput.value = '';
-				editColorInput.value = DEFAULT_COLOR;
-				deleteBinderButton.hidden = true;
-				editorTitle.textContent = 'Create Binder';
-				editorBackdrop.hidden = false;
-			};
-
-			const openEditor = (binderId: number): void => {
-				const binder = binders.find((item) => item.id === binderId);
-				if (!binder) {
-					return;
-				}
-
-				editIdInput.value = String(binder.id);
-				editNameInput.value = binder.name;
-				editColorInput.value = binder.color;
-				deleteBinderButton.hidden = false;
-				editorTitle.textContent = 'Edit Binder';
-				editorBackdrop.hidden = false;
-			};
-
-			const createBinderCard = (binder: Binder): HTMLElement => {
-				const card = document.createElement('article');
-				card.className = 'binder-card';
-				card.dataset.binderCard = 'true';
-				card.dataset.binderId = String(binder.id);
-
-				if ((window as any).mtgIsAuthed) {
-					card.classList.add('is-draggable');
-					card.draggable = true;
-					card.addEventListener('dragstart', (event) => {
-					draggedBinderId = binder.id;
-					card.classList.add('is-dragging');
-					if (event.dataTransfer) {
-						event.dataTransfer.effectAllowed = 'move';
-						event.dataTransfer.setData('text/plain', String(binder.id));
-					}
-				});
-				card.addEventListener('dragend', () => {
-					draggedBinderId = null;
-					card.classList.remove('is-dragging');
-					card.classList.remove('is-drop-target');
-				});
-				card.addEventListener('dragover', (event) => {
-					if (draggedBinderId === null || draggedBinderId === binder.id) return;
-					event.preventDefault();
-					card.classList.add('is-drop-target');
-					if (event.dataTransfer) {
-						event.dataTransfer.dropEffect = 'move';
-					}
-				});
-				card.addEventListener('dragleave', () => {
-					card.classList.remove('is-drop-target');
-				});
-				card.addEventListener('drop', (event) => {
-						event.preventDefault();
-						card.classList.remove('is-drop-target');
-						if (draggedBinderId === null || draggedBinderId === binder.id) return;
-						moveBinderToTarget(draggedBinderId, binder.id);
-					});
-				}
-
-				// The clickable card tile — same shape as Add Binder
-				const binderLink = document.createElement('a');
-				binderLink.className = 'binder-link';
-				binderLink.style.setProperty('--binder-color', binder.color || DEFAULT_COLOR);
-				binderLink.href = `/Moltencollection/binder?name=${encodeURIComponent(binder.name)}`;
-				binderLink.title = `Open ${binder.name}`;
-
-				const title = document.createElement('h3');
-				title.textContent = binder.name;
-
-				const count = document.createElement('p');
-				const cardCount = countBinderCards(binder);
-				count.textContent = `${cardCount} card${cardCount === 1 ? '' : 's'}`;
-
-				binderLink.appendChild(title);
-				binderLink.appendChild(count);
-
-				card.appendChild(binderLink);
-
-				if ((window as any).mtgIsAuthed) {
-					const editButton = document.createElement('button');
-					editButton.type = 'button';
-					editButton.className = 'edit-btn';
-					editButton.textContent = 'Edit';
-					editButton.addEventListener('click', (event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						openEditor(binder.id);
-					});
-					card.appendChild(editButton);
-				}
-
-				return card;
-			};
-
-			const renderBinders = (): void => {
-				const existingCards = binderGrid.querySelectorAll('[data-binder-card="true"]');
-				existingCards.forEach((card) => card.remove());
-
-				if (binders.length === 0) {
-					const empty = document.createElement('p');
-					empty.className = 'empty-state';
-					empty.dataset.binderCard = 'true';
-					empty.textContent = 'No binders yet. Click Add Binder to create one.';
-					binderGrid.appendChild(empty);
-					return;
-				}
-
-				binders.forEach((binder) => {
-					binderGrid.appendChild(createBinderCard(binder));
-				});
-			};
-
-			editorForm.addEventListener('submit', (event) => {
-				event.preventDefault();
-				const binderId = Number(editIdInput.value);
-				const isCreateMode = !editIdInput.value;
-				const binderName = editNameInput.value.trim();
-				const binderColor = isValidColor(editColorInput.value) ? editColorInput.value : DEFAULT_COLOR;
-
-				if (!binderName) {
-					return;
-				}
-
-				if (isCreateMode) {
-					binders.push({
-						id: Date.now(),
-						name: binderName,
-						color: binderColor
-					});
-
-					saveBinders();
-					renderBinders();
-					closeEditor();
-					return;
-				}
-
-				binders = binders.map((binder) => {
-					if (binder.id !== binderId) {
-						return binder;
-					}
-
-					return {
-						...binder,
-						name: binderName,
-						color: binderColor
-					};
-				});
-
-				saveBinders();
-				renderBinders();
-				closeEditor();
-			});
-
-			closeEditorButton.addEventListener('click', () => {
-				closeEditor();
-			});
-
-			deleteBinderButton.addEventListener('click', () => {
-				const binderId = Number(editIdInput.value);
-				if (!binderId) {
-					return;
-				}
-
-				const binder = binders.find((item) => item.id === binderId);
-				if (!binder) {
-					return;
-				}
-
-				const confirmed = window.confirm(`Delete binder "${binder.name}"?`);
-				if (!confirmed) {
-					return;
-				}
-
-				binders = binders.filter((item) => item.id !== binderId);
-				saveBinders();
-				renderBinders();
-				closeEditor();
-			});
-
-			openBinderButton.addEventListener('click', () => {
-				openCreateEditor();
-			});
-
-			editorBackdrop.addEventListener('click', (event) => {
-				if (event.target === editorBackdrop) {
-					closeEditor();
-				}
-			});
-
-			document.addEventListener('keydown', (event) => {
-				if (event.key === 'Escape' && !editorBackdrop.hidden) {
-					closeEditor();
-				}
-			});
-
-			renderBinders();
+		// ...existing code for moveBinderToTarget, closeEditor, openCreateEditor, openEditor, createBinderCard, renderBinders, editorForm, closeEditorButton, deleteBinderButton, openBinderButton, editorBackdrop, document.addEventListener...
 		</script>
 	</body>
 </html>

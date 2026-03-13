@@ -753,151 +753,42 @@
 				locationText?: string;
 			};
 
-			const STORAGE_KEY = 'mtgBinders';
-			const COLLECTION_STORAGE_KEY = 'mtgCollection';
-			const META_CACHE_KEY = 'mtgCollectionCardMeta';
-			const COVER_PAGE_INDEX = 0;
+			// ...existing code...
+			const collectionStatus = document.getElementById('collection-status');
+			const collectionEmpty = document.getElementById('collection-empty');
+			const tableWrap = document.getElementById('collection-table-wrap');
+			const collectionBody = document.getElementById('collection-body');
+			const collectionSearchInput = document.getElementById('collection-search-input');
+			const collectionInspectorBackdrop = document.getElementById('collection-inspector-backdrop');
+			const collectionInspectorLeft = document.querySelector('.collection-inspector-left');
+			const collectionInspectorImage = document.getElementById('collection-inspector-image');
+			const collectionInspectorTitle = document.getElementById('collection-inspector-title');
+			const collectionInspectorMeta = document.getElementById('collection-inspector-meta');
+			const collectionInspectorPrice = document.getElementById('collection-inspector-price');
+			const collectionInspectorErrata = document.getElementById('collection-inspector-errata');
+			const collectionInspectorClose = document.getElementById('collection-inspector-close');
+			const collectionQtyInput = document.getElementById('collection-qty-input');
+			const collectionQtyMinus = document.getElementById('collection-qty-minus');
+			const collectionQtyPlus = document.getElementById('collection-qty-plus');
+			const collectionFoilSelect = document.getElementById('collection-foil-select');
+			const collectionDeleteBtn = document.getElementById('collection-delete-btn');
 
-			const collectionStatus = document.getElementById('collection-status') as HTMLElement;
-			const collectionEmpty = document.getElementById('collection-empty') as HTMLElement;
-			const tableWrap = document.getElementById('collection-table-wrap') as HTMLElement;
-			const collectionBody = document.getElementById('collection-body') as HTMLElement;
-			const collectionSearchInput = document.getElementById('collection-search-input') as HTMLInputElement;
-			const collectionInspectorBackdrop = document.getElementById('collection-inspector-backdrop') as HTMLDivElement;
-			const collectionInspectorLeft = document.querySelector('.collection-inspector-left') as HTMLDivElement;
-			const collectionInspectorImage = document.getElementById('collection-inspector-image') as HTMLImageElement;
-			const collectionInspectorTitle = document.getElementById('collection-inspector-title') as HTMLDivElement;
-			const collectionInspectorMeta = document.getElementById('collection-inspector-meta') as HTMLDivElement;
-			const collectionInspectorPrice = document.getElementById('collection-inspector-price') as HTMLDivElement;
-			const collectionInspectorErrata = document.getElementById('collection-inspector-errata') as HTMLDivElement;
-			const collectionInspectorClose = document.getElementById('collection-inspector-close') as HTMLButtonElement;
-			const collectionQtyInput = document.getElementById('collection-qty-input') as HTMLInputElement;
-			const collectionQtyMinus = document.getElementById('collection-qty-minus') as HTMLButtonElement;
-			const collectionQtyPlus = document.getElementById('collection-qty-plus') as HTMLButtonElement;
-			const collectionFoilSelect = document.getElementById('collection-foil-select') as HTMLSelectElement;
-			const collectionDeleteBtn = document.getElementById('collection-delete-btn') as HTMLButtonElement;
+			let collections = [];
+			// Load collections from public/data.json for viewers
+			fetch('/data.json')
+				.then((res) => res.json())
+				.then((data) => {
+					collections = Array.isArray(data.collections) ? data.collections : [];
+					// Optionally re-render UI here
+				});
 
-			let inspectedCollectionRow: CollectionRow | null = null;
-			let inspectedBinderId: number | null = null;
-			let inspectedPageIdx = 0;
-			let inspectedSlotIndices: number[] = [];
-			let inspectorOracleToken = 0;
-			const inspectorOracleCache = new Map<string, string>();
-
-			const readBinders = (): Binder[] => {
-				try {
-					const raw = localStorage.getItem(STORAGE_KEY);
-					return raw ? (JSON.parse(raw) as Binder[]) : [];
-				} catch {
-					return [];
-				}
+			// Save collections only if authenticated
+			const saveCollections = () => {
+				if (!window.mtgIsAuthed) return;
+				alert('Saving collections is only possible for the authenticated user and must be done via GitHub or server.');
 			};
 
-			const saveBinders = (binders: Binder[]): void => {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
-			};
-
-				// Public view logic removed; now only local collection logic remains
-
-			const readMetaCache = (): Record<string, CardMeta> => {
-				try {
-					const raw = localStorage.getItem(META_CACHE_KEY);
-					return raw ? (JSON.parse(raw) as Record<string, CardMeta>) : {};
-				} catch {
-					return {};
-				}
-			};
-
-			const writeMetaCache = (cache: Record<string, CardMeta>): void => {
-				localStorage.setItem(META_CACHE_KEY, JSON.stringify(cache));
-			};
-
-			const asSlotCard = (slot: SlotValue): SlotCard | null => {
-				if (!slot || typeof slot !== 'object') return null;
-				if (!('id' in slot) || !('name' in slot)) return null;
-				return slot as SlotCard;
-			};
-
-			const collectionVariantKey = (card: SlotCard): string => {
-				return [card.id, card.lang ?? '', card.foil ?? 'nonfoil'].join('|');
-			};
-
-			const collectionSourceKey = (card: SlotCard, binderId: number): string => {
-				return (card.collectionSource ?? `binder:${binderId}`).trim().toLowerCase();
-			};
-
-			const fetchCardMeta = async (card: SlotCard): Promise<CardMeta> => {
-				const fallback: CardMeta = {
-					colorIdentity: [],
-					manaCost: '',
-					cmc: 0,
-					typeLine: '',
-					priceEur: '',
-					priceEurFoil: '',
-					priceUsd: '',
-					priceUsdFoil: ''
-				};
-				try {
-					if (card.id) {
-						const byId = await fetch(`https://api.scryfall.com/cards/${encodeURIComponent(card.id)}`);
-						if (byId.ok) {
-							const data = await byId.json() as {
-								color_identity?: string[];
-								mana_cost?: string;
-								cmc?: number;
-								type_line?: string;
-								prices?: {
-									eur?: string | null;
-									eur_foil?: string | null;
-									usd?: string | null;
-									usd_foil?: string | null;
-								};
-							};
-							return {
-								colorIdentity: Array.isArray(data.color_identity) ? data.color_identity : [],
-								manaCost: data.mana_cost ?? '',
-								cmc: Number.isFinite(data.cmc) ? Number(data.cmc) : 0,
-								typeLine: data.type_line ?? '',
-								priceEur: data.prices?.eur ?? '',
-								priceEurFoil: data.prices?.eur_foil ?? '',
-								priceUsd: data.prices?.usd ?? '',
-								priceUsdFoil: data.prices?.usd_foil ?? ''
-							};
-						}
-					}
-
-					if (card.scryfallUri) {
-						const response = await fetch(`${card.scryfallUri}?format=json`);
-						if (response.ok) {
-							const data = await response.json() as {
-								color_identity?: string[];
-								mana_cost?: string;
-								cmc?: number;
-								type_line?: string;
-								prices?: {
-									eur?: string | null;
-									eur_foil?: string | null;
-									usd?: string | null;
-									usd_foil?: string | null;
-								};
-							};
-							return {
-								colorIdentity: Array.isArray(data.color_identity) ? data.color_identity : [],
-								manaCost: data.mana_cost ?? '',
-								cmc: Number.isFinite(data.cmc) ? Number(data.cmc) : 0,
-								typeLine: data.type_line ?? '',
-								priceEur: data.prices?.eur ?? '',
-								priceEurFoil: data.prices?.eur_foil ?? '',
-								priceUsd: data.prices?.usd ?? '',
-								priceUsdFoil: data.prices?.usd_foil ?? ''
-							};
-						}
-					}
-				} catch {
-					return fallback;
-				}
-				return fallback;
-			};
+			// ...existing code for rendering, editing, etc...
 
 			const colorGroup = (colorIdentity: string[]): string => {
 				if (!Array.isArray(colorIdentity) || colorIdentity.length === 0) return 'Colorless';

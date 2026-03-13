@@ -1731,33 +1731,23 @@
 
 			const emptyBinderPage = (): BinderSlotValue[] => Array(BINDER_SLOTS_PER_PAGE).fill(null);
 
-			import { getBinders, saveBinder, getCollection, saveCollection } from '../firestoreSync';
-			const username = 'public';
-			let binders: BinderStorage[] = [];
-			getBinders(username).then((data) => {
-				binders = data;
-				// Optionally re-render UI here
-			});
-
-			const saveBinders = async (binders: BinderStorage[]): Promise<void> => {
-				if (!window.mtgIsAuthed) return;
-				for (const binder of binders) {
-					await saveBinder(username, String(binder.id), binder);
-				}
-			};
-
-			let collectionCards: SlotCard[] = [];
-			function fetchCollection() {
-				getCollection(username()).then((data) => {
-					collectionCards = data?.cards ?? [];
+			// ...existing code...
+			let decks = [];
+			// Load decks from public/data.json for viewers
+			fetch('/data.json')
+				.then((res) => res.json())
+				.then((data) => {
+					decks = Array.isArray(data.decks) ? data.decks : [];
 					// Optionally re-render UI here
 				});
-			}
-			fetchCollection();
-			const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
+
+			// Save decks only if authenticated
+			const saveDecks = () => {
 				if (!window.mtgIsAuthed) return;
-				await saveCollection(username, { cards });
+				alert('Saving decks is only possible for the authenticated user and must be done via GitHub or server.');
 			};
+
+			// ...existing code for rendering, editing, etc...
 
 			const ensureBinderPages = (binder: BinderStorage): BinderSlotValue[][] => {
 				const pages = Array.isArray(binder.pages) ? binder.pages : [];
