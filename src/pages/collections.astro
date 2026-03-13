@@ -610,9 +610,7 @@
 			<a href="/Moltencollection/collections" class="nav-btn active">Collection</a>
 		</nav>
 
-		<div style="display: flex; justify-content: flex-end; margin: 10px 0;">
-			<label style="color: #fff; margin-right: 8px;">Public View</label>
-		</div>
+		<!-- Public View button and label removed -->
 
 		<main>
 			<div class="collection-header">
@@ -798,18 +796,7 @@
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(binders));
 			};
 
-				import { getCollection, saveCollection } from '../firestoreSync';
-				const username = 'public';
-				let collectionCards: SlotCard[] = [];
-				getCollection(username).then((data) => {
-					collectionCards = data?.cards ?? [];
-					// Optionally re-render UI here
-				});
-
-				const saveCollectionCards = async (cards: SlotCard[]): Promise<void> => {
-					if (!window.mtgIsAuthed) return;
-					await saveCollection(username, { cards });
-				};
+				// Public view logic removed; now only local collection logic remains
 
 			const readMetaCache = (): Record<string, CardMeta> => {
 				try {
