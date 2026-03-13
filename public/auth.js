@@ -97,7 +97,11 @@
 			});
 
 			document.getElementById('login-cancel').addEventListener('click', function () {
-				backdrop.remove();
+				// Remove all login overlays from DOM
+				var overlays = document.querySelectorAll('#login-backdrop');
+				overlays.forEach(function(overlay) {
+					overlay.remove();
+				});
 				pwInput.value = '';
 				errorEl.hidden = true;
 			});
@@ -108,7 +112,10 @@
 
 			backdrop.addEventListener('click', function (e) {
 				if (e.target === backdrop) {
-					backdrop.remove();
+					var overlays = document.querySelectorAll('#login-backdrop');
+					overlays.forEach(function(overlay) {
+						overlay.remove();
+					});
 					pwInput.value = '';
 					errorEl.hidden = true;
 				}
